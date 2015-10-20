@@ -1,0 +1,5 @@
+Django>=1.8
+django-bootstrap3-datetimepicker
+python-mpd2
+celery
+sqlalchemy
