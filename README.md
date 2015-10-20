@@ -5,29 +5,29 @@ It was created because the existing control interfaces for streaming stations we
 
 ## Existing features (what does it atm)
 
--) Login (Users need to be created via django admin interface)
--) Display scheduled playlists (playlists need to be added via django admin interface)
--) Add new entries to the schedule and check for scheduling conflicts
--) At the scheduled time start playing them via mpd
+* Login (Users need to be created via django admin interface)
+* Display scheduled playlists (playlists need to be added via django admin interface)
+* Add new entries to the schedule and check for scheduling conflicts
+* At the scheduled time start playing them via mpd
 
 ## Feature ideas (what should it do, mostly in order of preference)
 
--) add music to the MPD collection
--) add playlists
--) check if every song of the playlist is available in the MPD collection
--) preprocess music (mp3gain, mixramp)
--) public display of schedule
--) better scheduling
--) placeholder "playlists" for live streaming to icecast
--) ...
+* add music to the MPD collection
+* add playlists
+* check if every song of the playlist is available in the MPD collection
+* preprocess music (mp3gain, mixramp)
+* public display of schedule
+* better scheduling
+* placeholder "playlists" for live streaming to icecast
+* ...
 
 # Requirements & Installation
 
 ## Requirements
 
--) Python 3 (check requirements.txt for the Python dependencies)
--) rabbitmq (for celery)
--) mpd
+* Python 3 (check requirements.txt for the Python dependencies)
+* rabbitmq (for celery)
+* mpd
 
 # Installation
 
