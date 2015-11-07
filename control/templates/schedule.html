@@ -7,9 +7,29 @@
     <link href="{% static 'bootstrap/css/bootstrap.min.css' %}"
           rel="stylesheet" media="screen">
 </head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+<script type="text/javascript">
+function deleteEntry(link){
+	base_url = "/schedule/";
+	post_url = base_url + link.id + "/";
+	var result = confirm("Delete Entry?");
+	if (result) {
+        $.ajax({
+            type: "DELETE",
+            url: post_url,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}'},
+            complete: function(response, textStatus) {
+                        if (response.status == 278) {
+                            window.location = response.getResponseHeader('Location')
+                        }
+            }
+        });
+    }
+}
+</script>
 <p>
 {% if user.is_authenticated %}
-    <p>Welcome, {{ user.username }}. Thanks for logging in. <a href="/logout">Logout.</a></p>
+    <p>Welcome, {{ user.username }}. Thanks for logging in.<a href="/logout">Logout.</a></p>
 {% else %}
     <p>Please <a href="/login/">login</a>.</p>
 {% endif %}
@@ -44,8 +64,12 @@
             <td>{{entry.begin_time.astimezone.date|date:"D, d.m"}}</td>
             <td>{{entry.begin_time.astimezone.time|date:"H:i"}}</td>
             <td>{{entry.end_time.astimezone.time|date:"H:i"}}</td>
-            <td><a href="/scheduleentry/{{ entry.id }}/">Show</a></td>
-            <td><a id="{{post.id}}" href="#" onclick="javascript:deletePost(this)">Delete Entry</a></td>
+            <td><a href="/schedule/{{ entry.id }}/">Show</a></td>
+            {% if not entry.is_past_begin_time %}
+                <td><a id="{{entry.id}}" href="#" onclick="javascript:deleteEntry(this)">Delete Entry</a></td>
+            {% else %}
+                <td></td>
+            {% endif %}
         </tr>
   {% endfor %}
 </table>

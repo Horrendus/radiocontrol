@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^index.html$', 'control.views.index'),
     url(r'^schedule.html$', 'control.views.schedule'),
     url(r'^schedule/$', 'control.views.schedule'),
+    url(r'^schedule/(?P<entry_id>\d+)/$', 'control.views.schedule_entries'),
     url(r'^schedule/new.html$', 'control.views.new_schedule'),
     url(r'^login/$', 'django.contrib.auth.views.login'),
     url(r'^logout/$', 'control.views.destroy_session'),

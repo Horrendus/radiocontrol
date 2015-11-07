@@ -29,7 +29,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils import timezone
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from control.forms import ScheduleEntryForm
 from control.models import Playlist, ScheduleEntry
@@ -48,7 +48,8 @@ def schedule(request):
             all_entries = ScheduleEntry.objects.all().order_by('begin_time')
         else:
             all_entries = (obj for obj in ScheduleEntry.objects.all() if obj.end_time >= timezone.now())
-        return render_to_response('schedule.html', {'all_entries': all_entries, 'display_old': old}, context_instance=RequestContext(request))
+        return render_to_response('schedule.html', {'all_entries': all_entries, 'display_old': old},
+                                  context_instance=RequestContext(request))
     if request.method == 'POST':
         print(request.POST)
         form = ScheduleEntryForm(request.POST)
@@ -66,8 +67,6 @@ def schedule(request):
             return HttpResponse(str(form.errors), content_type='text/html')
 
 
-
-
 @login_required
 def new_schedule(request):
     if request.method == 'GET':
@@ -75,6 +74,33 @@ def new_schedule(request):
     else:
         form = ScheduleEntryForm(request.POST)
     return render(request, "new_schedule.html", dict(form=form))
+
+
+@login_required()
+def schedule_entries(request, entry_id):
+    if request.method == 'GET':
+        return HttpResponse("TODO: Entry Detail %s" % entry_id, content_type='text/plain')
+    if request.method == 'DELETE':
+        redirect = HttpResponseRedirect("/schedule/")
+        if request.is_ajax():
+            redirect.status_code = 278
+        try:
+            entry = ScheduleEntry.objects.get(id=int(entry_id))
+            if entry:
+                if timezone.now() < (entry.begin_time - timedelta(seconds=60)):
+                        print("delete entry: %s" % entry.id)
+                        entry.delete()
+                        messages.success(request, 'Sucessfully deleted schedule entry')
+                        return redirect
+                else:
+                    messages.success('must delete more than one minute in advance')
+                    return redirect
+            else:
+                messages.success('entry not found')
+                return redirect
+        except ValueError as e:
+            messages.success('incorrect argument')
+            return redirect
 
 
 def sessions(request):
