@@ -1,5 +1,5 @@
-Django>=1.8
-django-bootstrap3-datetimepicker
+Django>=1.9,<1.9.99
+django-bootstrap3-datetimepicker-2==2.4.2
 python-mpd2
 celery
 sqlalchemy

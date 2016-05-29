@@ -61,14 +61,13 @@ The configuration expects *radiocontrol.key* & *radiocontrol.crt* to be in the *
 
 ### Run image
 
-If mpd is running in another docker image, you need to link it to this container.
+If mpd is running in another docker image, you need to link it to this container. Also if rabbitmq is running in another container, link that one to.
 
 ```bash
-docker run --name=radiocontrol --link radio:radio -e -e 'RADIO_MPD_HOST=radio' -e 'RADIO_MPD_PORT=6600' \
--e 'RADIO_SECRET_KEY=enter-secret-key-here' -d -it -p 443:443 -v /data/radiocontrol:/data radiocontrol
+docker run --name=radiocontrol --link mpd:mpd --link rabbitmq:rabbitmq -e -e 'RADIO_MPD_HOST=radio' -e 'RADIO_MPD_PORT=6600' \
+-e 'RADIO_SECRET_KEY=enter-secret-key-here' -e 'RADIO_BROKER_URL=amqp://guest:guest@rabbitmq:5672//' \
+-e 'DJANGO_SETTINGS_MODULE=radiocontrol.settings.production' -d -it -p 443:443 -v /data/radiocontrol:/data radiocontrol
 ```
-
-# Installation HowTo
 
 # Author
 

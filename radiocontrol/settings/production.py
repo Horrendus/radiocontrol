@@ -16,7 +16,7 @@ DATABASES = {
 
 # CELERY settings
 CELERY_RESULT_BACKEND = 'db+sqlite:////data/celery_results.sqlite'
-BROKER_URL = 'amqp://'
+BROKER_URL = os.environ['RADIO_BROKER_URL']
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_ENABLE_UTC = False
