@@ -21,11 +21,17 @@ It was created because the existing control interfaces for streaming stations we
 * placeholder "playlists" for live streaming to icecast
 * ...
 
+# Project Structure
+
+* old_radiocontrol_app: Django Application that supports the existing features with a basic HTML frontend
+* api: Django 2.0 REST API - under development - rewrite of the old App (mostly) from scratch, will only offer a REST API
+* frontend: not existing yet - Frontend for the new API
+
 # Requirements & Installation
 
 ## Requirements
 
-* Python 3 (check requirements.txt for the Python dependencies)
+* Python 3 (check requirements.txt/Pipfile for Python dependencies)
 * rabbitmq (for celery)
 * mpd
 

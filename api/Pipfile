@@ -1,0 +1,23 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+django = "*"
+djangorestframework = "*"
+django-cors-headers = "*"
+celery = "*"
+"python-mpd2" = "*"
+
+
+[dev-packages]
+
+
+
+[pipenv]
+
+allow_prereleases = true
