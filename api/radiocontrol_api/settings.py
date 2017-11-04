@@ -36,7 +36,11 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # from this project
+    'api',
+    # from libraries
     'corsheaders',
+    'ordered_model',
     # 'django.contrib.admin',
     # 'django.contrib.auth',
     'django.contrib.contenttypes',

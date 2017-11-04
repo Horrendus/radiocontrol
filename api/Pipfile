@@ -12,10 +12,12 @@ djangorestframework = "*"
 django-cors-headers = "*"
 celery = "*"
 "python-mpd2" = "*"
+django-ordered-model = "*"
 
 
 [dev-packages]
 
+ipython = "*"
 
 
 [pipenv]

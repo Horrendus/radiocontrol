@@ -16,40 +16,62 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
+from ordered_model.models import OrderedModel
 
 
 class Song(models.Model):
-    artist = models.CharField()
-    name = models.CharField()
+    artist = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
     file = models.FileField(upload_to='music/')
 
 
 class Playlist(models.Model):
-    name = models.CharField()
-    songs = models.ManyToManyField(Song)
+    name = models.CharField(max_length=128)
+    songs = models.ManyToManyField(Song, through="PlaylistOrder")
+
+
+class PlaylistOrder(OrderedModel):
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
+    song = models.ForeignKey(Song, on_delete=models.CASCADE)
+    order_with_respect_to = 'playlist'
+
+    class Meta:
+        ordering = ('playlist', 'order')
 
 
 # distinct entry in the schedule (from pause to pause)
 class ScheduleEntry(models.Model):
-    begin_datetime = models.DateTimeField()
-    playlists = models.ManyToManyField(Playlist, through='PlaylistOrder')
+    begin_datetime = models.DateTimeField(max_length=128)
+    playlists = models.ManyToManyField(Playlist, through='ScheduleEntryOrder')
 
 
-class PlaylistOrder(models.Model):
-    number = models.PositiveIntegerField()
-    schedule_entry = models.ForeignKey(ScheduleEntry)
-    playlist = models.ForeignKey(Playlist)
+class ScheduleEntryOrder(OrderedModel):
+    schedule_entry = models.ForeignKey(ScheduleEntry, on_delete=models.CASCADE)
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
+    order_with_respect_to = 'schedule_entry'
+
+    class Meta:
+        ordering = ('schedule_entry', 'order')
 
 
 # songs that may not yet be available
 class DraftSong(models.Model):
-    artist = models.CharField()
-    name = models.CharField()
-    filename = models.CharField()
+    artist = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
+    filename = models.CharField(max_length=256)
 
 
 # generated from uploaded playlists and not all songs may yet be available
 # when all songs are available, it can be stored as a Playlist
 class DraftPlaylist(models.Model):
-    name = models.CharField()
-    songs = models.ManyToManyField(DraftSong)
+    name = models.CharField(max_length=128)
+    songs = models.ManyToManyField(DraftSong, through='DraftPlaylistOrder')
+
+
+class DraftPlaylistOrder(OrderedModel):
+    playlist = models.ForeignKey(DraftPlaylist, on_delete=models.CASCADE)
+    song = models.ForeignKey(DraftSong, on_delete=models.CASCADE)
+    order_with_respect_to = 'playlist'
+
+    class Meta:
+        ordering = ('playlist', 'order')
