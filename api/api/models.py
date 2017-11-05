@@ -22,11 +22,11 @@ from ordered_model.models import OrderedModel
 class Song(models.Model):
     artist = models.CharField(max_length=128)
     name = models.CharField(max_length=128)
-    file = models.FileField(upload_to='music/')
+    filename = models.CharField(max_length=256, unique=True)
 
 
 class Playlist(models.Model):
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, unique=True)
     songs = models.ManyToManyField(Song, through="PlaylistOrder")
 
 
@@ -41,7 +41,7 @@ class PlaylistOrder(OrderedModel):
 
 # distinct entry in the schedule (from pause to pause)
 class ScheduleEntry(models.Model):
-    begin_datetime = models.DateTimeField(max_length=128)
+    begin_datetime = models.DateTimeField(max_length=128, unique=True)
     playlists = models.ManyToManyField(Playlist, through='ScheduleEntryOrder')
 
 
@@ -58,13 +58,13 @@ class ScheduleEntryOrder(OrderedModel):
 class DraftSong(models.Model):
     artist = models.CharField(max_length=128)
     name = models.CharField(max_length=128)
-    filename = models.CharField(max_length=256)
+    filename = models.CharField(max_length=256, unique=True)
 
 
 # generated from uploaded playlists and not all songs may yet be available
 # when all songs are available, it can be stored as a Playlist
 class DraftPlaylist(models.Model):
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, unique=True)
     songs = models.ManyToManyField(DraftSong, through='DraftPlaylistOrder')
 
 
