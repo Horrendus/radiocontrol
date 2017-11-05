@@ -15,18 +15,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.http import HttpResponse
-from django.http import Http404
+from api.models import DraftSong, DraftPlaylist
+from api.serializers import DraftSongSerializer, DraftPlaylistSerializer
 
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
+from rest_framework import generics
 
 
-class JSONResponse(HttpResponse):
-    """
-    An HttpResponse that renders its content into JSON.
-    """
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
+class DraftSongList(generics.ListAPIView):
+    queryset = DraftSong.objects.all()
+    serializer_class = DraftSongSerializer
+
+
+class DraftPlaylistList(generics.ListCreateAPIView):
+    queryset = DraftPlaylist.objects.all()
+    serializer_class = DraftPlaylistSerializer

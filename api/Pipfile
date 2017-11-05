@@ -18,6 +18,7 @@ django-ordered-model = "*"
 [dev-packages]
 
 ipython = "*"
+ipdb = "*"
 
 
 [pipenv]

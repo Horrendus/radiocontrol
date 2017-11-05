@@ -18,6 +18,10 @@
 from django.contrib import admin
 from django.urls import path
 
+from api.views import DraftSongList, DraftPlaylistList
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('draftsong/', DraftSongList.as_view()),
+    path('draftplaylist/', DraftPlaylistList.as_view()),
 ]
