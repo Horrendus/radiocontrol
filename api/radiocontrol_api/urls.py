@@ -18,10 +18,15 @@
 from django.contrib import admin
 from django.urls import path
 
-from api.views import DraftSongList, DraftPlaylistList
+from api.views import DraftSongListView, DraftPlaylistListView, DraftPlaylistReadUpdateDestroyView, SongListView, \
+    PlaylistListView, PlaylistReadUpdateDestroyView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('draftsong/', DraftSongList.as_view()),
-    path('draftplaylist/', DraftPlaylistList.as_view()),
+    path('draftsongs/', DraftSongListView.as_view()),
+    path('draftplaylist/<str:name>/', DraftPlaylistReadUpdateDestroyView.as_view()),
+    path('draftplaylists/', DraftPlaylistListView.as_view()),
+    path('songs/', SongListView.as_view()),
+    path('playlist/<str:name>/', PlaylistReadUpdateDestroyView.as_view()),
+    path('playlists/', PlaylistListView.as_view()),
 ]

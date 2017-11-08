@@ -15,17 +15,40 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from api.models import DraftSong, DraftPlaylist
-from api.serializers import DraftSongSerializer, DraftPlaylistSerializer
+from api.models import DraftSong, DraftPlaylist, Song, Playlist
+from api.serializers import DraftSongSerializer, DraftPlaylistSerializer, SongSerializer, PlaylistSerializer
 
 from rest_framework import generics
 
 
-class DraftSongList(generics.ListAPIView):
+class DraftSongListView(generics.ListAPIView):
     queryset = DraftSong.objects.all()
     serializer_class = DraftSongSerializer
 
 
-class DraftPlaylistList(generics.ListCreateAPIView):
+class DraftPlaylistListView(generics.ListCreateAPIView):
     queryset = DraftPlaylist.objects.all()
     serializer_class = DraftPlaylistSerializer
+
+
+class DraftPlaylistReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = DraftPlaylist.objects.all()
+    serializer_class = DraftPlaylistSerializer
+    lookup_field = 'name'
+
+
+class SongListView(generics.ListAPIView):
+    queryset = Song.objects.all()
+    serializer_class = SongSerializer
+
+
+class PlaylistListView(generics.ListCreateAPIView):
+    queryset = Playlist.objects.all()
+    serializer_class = PlaylistSerializer
+
+
+class PlaylistReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Playlist.objects.all()
+    serializer_class = PlaylistSerializer
+    lookup_field = 'name'
+
