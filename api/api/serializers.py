@@ -18,6 +18,7 @@
 from rest_framework import serializers
 
 from api.models import DraftSong, DraftPlaylist, DraftPlaylistOrder, Song, Playlist, PlaylistOrder
+from api.validators import ExistsValidator
 
 
 class DraftSongSerializer(serializers.ModelSerializer):
@@ -39,7 +40,6 @@ class DraftPlaylistSerializer(serializers.ModelSerializer):
         fields = ('name', 'songs')
 
     def create(self, validated_data):
-        print("create draftplaylist")
         name = validated_data.pop('name')
         songs_data = validated_data.pop('songs')
         playlist = DraftPlaylist.objects.create(name=name)
@@ -60,7 +60,7 @@ class SongSerializer(serializers.ModelSerializer):
         fields = ('artist', 'name', 'filename')
         extra_kwargs = {
             'filename': {
-                'validators': [],
+                'validators': [ExistsValidator(queryset=Song.objects.all())],
             }
         }
 
@@ -73,12 +73,11 @@ class PlaylistSerializer(serializers.ModelSerializer):
         fields = ('name', 'songs')
 
     def create(self, validated_data):
-        print("create playlists")
         name = validated_data.pop('name')
         songs_data = validated_data.pop('songs')
-        playlist = DraftPlaylist.objects.create(name=name)
+        playlist = Playlist.objects.create(name=name)
         for song_data in songs_data:
-            song = DraftSong.objects.get(filename=song_data["filename"])
+            song = Song.objects.get(filename=song_data["filename"])
             print(song)
             PlaylistOrder.objects.create(playlist=playlist, song=song)
         return playlist
