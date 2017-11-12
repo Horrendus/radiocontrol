@@ -15,10 +15,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+
+from django.views import View
+from django.http import HttpResponse
+from django.conf import settings
+
+from rest_framework import generics
+
 from api.models import DraftSong, DraftPlaylist, Song, Playlist
 from api.serializers import DraftSongSerializer, DraftPlaylistSerializer, SongSerializer, PlaylistSerializer
 
-from rest_framework import generics
+media_backend = settings.MEDIA_BACKEND()
 
 
 class DraftSongListView(generics.ListAPIView):
@@ -52,3 +60,27 @@ class PlaylistReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PlaylistSerializer
     lookup_field = 'name'
 
+
+class MediaCreateView(View):
+
+    http_method_names = ['post', 'head', 'options', 'trace']
+
+    def post(self, request):
+        mediadata = json.loads(request.body)
+        ok = media_backend.save_media(mediadata)
+        if ok:
+            return HttpResponse(status=201)
+
+
+class MediaReadUpdateDestroyView(View):
+
+    http_method_names = ['get', 'put', 'delete', 'head', 'options', 'trace']
+
+    def get(self, request, *args, **kwargs):
+        pass
+
+    def put(self, request, *args, **kwargs):
+        pass
+
+    def delete(self, request, *args, **kwargs):
+        pass

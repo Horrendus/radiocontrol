@@ -81,3 +81,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
             print(song)
             PlaylistOrder.objects.create(playlist=playlist, song=song)
         return playlist
+
+    def update(self, instance, validated_data):
+        print("update not implemented yet")
+        return instance

@@ -17,6 +17,8 @@
 
 import os
 
+from api.file_mediabackend import FileMediabackend
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -108,7 +110,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = '/var/lib/mpd'
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760 # 10 MB
 
 # TODO: extract into dev & production configs
 # Database
@@ -132,3 +134,6 @@ CELERY_TIMEZONE = 'Europe/Vienna'
 # MPD settings
 MPD_SERVER = 'localhost'
 MPD_PORT = 6600
+
+# Media Backend
+MEDIA_BACKEND = FileMediabackend
