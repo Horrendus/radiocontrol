@@ -17,6 +17,8 @@
 
 import json
 
+from importlib import import_module
+
 from django.views import View
 from django.http import HttpResponse
 from django.conf import settings
@@ -26,7 +28,7 @@ from rest_framework import generics
 from api.models import DraftSong, DraftPlaylist, Song, Playlist
 from api.serializers import DraftSongSerializer, DraftPlaylistSerializer, SongSerializer, PlaylistSerializer
 
-media_backend = settings.MEDIA_BACKEND()
+media_backend = import_module(settings.MEDIA_BACKEND)
 
 
 class DraftSongListView(generics.ListAPIView):
@@ -65,7 +67,8 @@ class MediaCreateView(View):
 
     http_method_names = ['post', 'head', 'options', 'trace']
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         mediadata = json.loads(request.body)
         ok = media_backend.save_media(mediadata)
         if ok:

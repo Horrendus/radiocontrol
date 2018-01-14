@@ -17,8 +17,6 @@
 
 import os
 
-from api.file_mediabackend import FileMediabackend
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -136,4 +134,4 @@ MPD_SERVER = 'localhost'
 MPD_PORT = 6600
 
 # Media Backend
-MEDIA_BACKEND = FileMediabackend
+MEDIA_BACKEND = 'api.file_mediabackend'

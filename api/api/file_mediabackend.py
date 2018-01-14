@@ -22,8 +22,19 @@ from typing import Dict
 
 from api.models import Song
 
+MEDIA_ROOT = '/tmp/var/lib/mpd/'
+
+
+def music_root():
+    return MEDIA_ROOT + 'music/'
+
+
+def playlist_root():
+    return MEDIA_ROOT + 'playlists/'
+
 
 def save_file(filename: str, file_data: bytes):
+    print("save file", filename)
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, 'wb') as f:
         f.write(file_data)
@@ -44,21 +55,15 @@ def process_file(filename: str):
     pass
 
 
-class FileMediabackend:
-
-    def __init__(self, media_root='/tmp/var/lib/mpd/'):
-        self.music_root = media_root + 'music/'
-        self.playlist_root = media_root + 'playlists/'
-
-    def save_media(self, mediadata: Dict[str, str]):
-        ok = validate(mediadata)
-        if ok:
-            filename = mediadata['filename']
-            base64_data_str = mediadata.pop('data')
-            base64_data = bytes(base64_data_str, 'UTF-8')
-            file_data = base64.b64decode(base64_data)
-            full_filename = self.music_root + filename
-            save_file(full_filename, file_data)
-            Song.objects.create(**mediadata)
-            return True
-        return False
+def save_media(mediadata: Dict[str, str]):
+    ok = validate(mediadata)
+    if ok:
+        filename = mediadata['filename']
+        base64_data_str = mediadata.pop('data')
+        base64_data = bytes(base64_data_str, 'UTF-8')
+        file_data = base64.b64decode(base64_data)
+        full_filename = music_root() + filename
+        save_file(full_filename, file_data)
+        Song.objects.create(**mediadata)
+        return True
+    return False
