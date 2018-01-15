@@ -108,7 +108,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760 # 10 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
 
 # TODO: extract into dev & production configs
 # Database

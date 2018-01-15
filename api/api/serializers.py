@@ -17,7 +17,8 @@
 
 from rest_framework import serializers
 
-from api.models import DraftSong, DraftPlaylist, DraftPlaylistOrder, Song, Playlist, PlaylistOrder
+from api.models import DraftSong, DraftPlaylist, DraftPlaylistOrder, Song, Playlist, PlaylistOrder, ScheduleEntry, \
+    ScheduleEntryOrder
 from api.validators import ExistsValidator
 
 
@@ -81,6 +82,46 @@ class PlaylistSerializer(serializers.ModelSerializer):
             print(song)
             PlaylistOrder.objects.create(playlist=playlist, song=song)
         return playlist
+
+    def update(self, instance, validated_data):
+        print("update not implemented yet")
+        return instance
+
+
+class PlaylistNameSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Playlist
+        fields = ['name']
+        extra_kwargs = {
+            'name': {
+                'validators': [ExistsValidator(queryset=Playlist.objects.all())],
+            }
+        }
+
+
+class ScheduleEntrySerializer(serializers.ModelSerializer):
+    playlists = PlaylistNameSerializer(many=True)
+
+    class Meta:
+        model = ScheduleEntry
+        fields = ('begin_datetime', 'playlists')
+        extra_kwargs = {
+            'playlists': {
+                'validators': [ExistsValidator(queryset=Playlist.objects.all())],
+            }
+            # TODO: begin_datetime validator
+        }
+
+    def create(self, validated_data):
+        begin_datetime = validated_data.pop('begin_datetime')
+        playlists_data = validated_data.pop('playlists')
+        schedule_entry = ScheduleEntry.objects.create(begin_datetime=begin_datetime)
+        for playlist_data in playlists_data:
+            playlist_name = playlist_data['name']
+            playlist = Playlist.objects.get(name=playlist_name)
+            ScheduleEntryOrder.objects.create(schedule_entry=schedule_entry, playlist=playlist)
+        return schedule_entry
 
     def update(self, instance, validated_data):
         print("update not implemented yet")

@@ -25,8 +25,9 @@ from django.conf import settings
 
 from rest_framework import generics
 
-from api.models import DraftSong, DraftPlaylist, Song, Playlist
-from api.serializers import DraftSongSerializer, DraftPlaylistSerializer, SongSerializer, PlaylistSerializer
+from api.models import DraftSong, DraftPlaylist, Song, Playlist, ScheduleEntry
+from api.serializers import DraftSongSerializer, DraftPlaylistSerializer, SongSerializer, PlaylistSerializer, \
+    ScheduleEntrySerializer
 
 media_backend = import_module(settings.MEDIA_BACKEND)
 
@@ -61,6 +62,17 @@ class PlaylistReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Playlist.objects.all()
     serializer_class = PlaylistSerializer
     lookup_field = 'name'
+
+
+class ScheduleEntryListView(generics.ListCreateAPIView):
+    queryset = ScheduleEntry.objects.all()
+    serializer_class = ScheduleEntrySerializer
+
+
+class ScheduleEntryReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ScheduleEntry.objects.all()
+    serializer_class = ScheduleEntrySerializer
+    lookup_field = 'begin_time'
 
 
 class MediaCreateView(View):
