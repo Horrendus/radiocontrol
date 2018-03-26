@@ -19,23 +19,16 @@ from celery import shared_task
 from django.conf import settings
 from mpd import MPDClient
 
+from typing import List
 
-# TODO: adapt to new backend functionality (list of songs instead of playlists)
+
 @shared_task
-def schedule_playlist(playlist_name):
+def schedule_playlists(playlists: List[str]):
     client = MPDClient()
     client.connect(settings.MPD_SERVER, settings.MPD_PORT)
     client.clear()
-    client.load(playlist_name)
-    client.play(1)
-    client.close()
-    client.disconnect()
-
-
-@shared_task
-def play():
-    client = MPDClient()
-    client.connect(settings.MPD_SERVER, settings.MPD_PORT)
+    for playlist in playlists:
+        client.load(playlist)
     client.play(1)
     client.close()
     client.disconnect()

@@ -41,7 +41,7 @@ class FileMediaBackendTest(TestCase):
             file1_data_b64 = base64.b64encode(f.read())
         file1_metadata = {
             'artist': 'Scott Holmes',
-            'name': 'Happy Days',
+            'title': 'Happy Days',
             'filename': file1_filename,
             'data': str(file1_data_b64, 'UTF-8')
         }

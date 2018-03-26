@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from rest_framework import serializers
+from rest_framework.validators import ValidationError
+
+from datetime import timedelta
 
 from api.models import DraftSong, DraftPlaylist, DraftPlaylistOrder, Song, Playlist, PlaylistOrder, ScheduleEntry, \
     ScheduleEntryOrder
@@ -25,7 +28,7 @@ from api.validators import ExistsValidator
 class DraftSongSerializer(serializers.ModelSerializer):
     class Meta:
         model = DraftSong
-        fields = ('artist', 'name', 'filename')
+        fields = ('artist', 'name', 'filename', 'length')
         extra_kwargs = {
             'filename': {
                 'validators': [],
@@ -45,8 +48,8 @@ class DraftPlaylistSerializer(serializers.ModelSerializer):
         songs_data = validated_data.pop('songs')
         playlist = DraftPlaylist.objects.create(name=name)
         for song_data in songs_data:
-            song, exists = DraftSong.objects.get_or_create(**song_data)
-            print(song, exists)
+            song, created = DraftSong.objects.get_or_create(**song_data)
+            print(song, created)
             DraftPlaylistOrder.objects.create(playlist=playlist, song=song)
         return playlist
 
@@ -106,23 +109,39 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduleEntry
         fields = ('begin_datetime', 'playlists')
-        extra_kwargs = {
-            'playlists': {
-                'validators': [ExistsValidator(queryset=Playlist.objects.all())],
-            }
-            # TODO: begin_datetime validator
-        }
 
     def create(self, validated_data):
         begin_datetime = validated_data.pop('begin_datetime')
-        playlists_data = validated_data.pop('playlists')
+        playlists = validated_data.pop('playlists')
         schedule_entry = ScheduleEntry.objects.create(begin_datetime=begin_datetime)
-        for playlist_data in playlists_data:
-            playlist_name = playlist_data['name']
-            playlist = Playlist.objects.get(name=playlist_name)
+        for playlist in playlists:
             ScheduleEntryOrder.objects.create(schedule_entry=schedule_entry, playlist=playlist)
         return schedule_entry
 
     def update(self, instance, validated_data):
         print("update not implemented yet")
         return instance
+
+    def validate(self, data):
+        playlists_data = data.pop('playlists')
+        begin_datetime = data['begin_datetime']
+        playlists = []
+        for playlist_data in playlists_data:
+            playlist_name = playlist_data['name']
+            playlist = Playlist.objects.get(name=playlist_name)
+            playlists.append(playlist)
+        duration = sum([p.length for p in playlists])
+        closest_schedule_entries = ScheduleEntry.get_closest_to(begin_datetime)
+        if closest_schedule_entries["before"]:
+            entry_before = closest_schedule_entries["before"]
+            end_of_before = entry_before.begin_datetime + timedelta(seconds=entry_before.length)
+            if end_of_before > begin_datetime:
+                raise ValidationError("ScheduleEntry must begin after end of last ScheduleEntry")
+        if closest_schedule_entries["after"]:
+            entry_after = closest_schedule_entries["after"]
+            end_of_current = begin_datetime + timedelta(seconds=duration)
+            begin_of_next = entry_after.begin_datetime
+            if end_of_current > begin_of_next:
+                raise ValidationError("ScheduleEntry must end before begin of next ScheduleEntry")
+        data["playlists"] = playlists
+        return data

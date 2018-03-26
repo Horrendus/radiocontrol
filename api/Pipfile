@@ -19,8 +19,5 @@ django-ordered-model = "*"
 
 ipython = "*"
 ipdb = "*"
-
-
-[pipenv]
-
-allow_prereleases = true
+requests = "*"
+mutagen = "*"

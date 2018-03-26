@@ -44,7 +44,7 @@ def save_file(filename: str, file_data: bytes):
 def validate(mediadata: Dict[str, str]):
     valid = list()
     valid.append('artist' in mediadata)
-    valid.append('name' in mediadata)
+    valid.append('title' in mediadata)
     valid.append('filename' in mediadata)
     valid.append('data' in mediadata)
     return all(valid)
@@ -65,5 +65,6 @@ def save_media(mediadata: Dict[str, str]):
         full_filename = music_root() + filename
         save_file(full_filename, file_data)
         Song.objects.create(**mediadata)
+        # TODO: mpd update
         return True
     return False
