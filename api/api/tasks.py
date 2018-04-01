@@ -27,6 +27,7 @@ def schedule_playlists(playlists: List[str]):
     client = MPDClient()
     client.connect(settings.MPD_SERVER, settings.MPD_PORT)
     client.clear()
+    print(f"Celery Task scheduling playlists {playlists}")
     for playlist in playlists:
         client.load(playlist)
     client.play(1)

@@ -123,7 +123,7 @@ DATABASES = {
 
 # CELERY settings
 CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
-BROKER_URL = 'amqp://'
+CELERY_BROKER_URL = 'amqp://'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_ENABLE_UTC = False

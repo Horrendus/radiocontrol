@@ -13,6 +13,7 @@ django-cors-headers = "*"
 celery = "*"
 "python-mpd2" = "*"
 django-ordered-model = "*"
+SQLAlchemy = "*"
 
 
 [dev-packages]

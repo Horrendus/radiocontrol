@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c59135b0b11e5e10b7124f81f2a56aed9dab301f9d21a09ced4e9cc1896e58fc"
+            "sha256": "f8f65602223ae26ae6663f93777711c3f0340664c043174c7168e652bd4db7f7"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -9,9 +9,9 @@
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
-            "platform_release": "4.15.10-300.fc27.x86_64",
+            "platform_release": "4.15.13-300.fc27.x86_64",
             "platform_system": "Linux",
-            "platform_version": "#1 SMP Thu Mar 15 17:13:04 UTC 2018",
+            "platform_version": "#1 SMP Mon Mar 26 19:06:57 UTC 2018",
             "python_full_version": "3.6.4",
             "python_version": "3.6",
             "sys_platform": "linux"
@@ -102,6 +102,12 @@
                 "sha256:410bcd1d6409026fbaa65d9ed33bf6dd8b1e94a499e32168acfc7b332e4095c0"
             ],
             "version": "==2018.3"
+        },
+        "sqlalchemy": {
+            "hashes": [
+                "sha256:7cb00cc9b9f92ef8b4391c8a2051f81eeafefe32d63c6b395fd51401e9a39edb"
+            ],
+            "version": "==1.2.6"
         },
         "vine": {
             "hashes": [

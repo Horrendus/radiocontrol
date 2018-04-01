@@ -28,7 +28,7 @@ from api.validators import ExistsValidator
 class DraftSongSerializer(serializers.ModelSerializer):
     class Meta:
         model = DraftSong
-        fields = ('artist', 'name', 'filename', 'length')
+        fields = ('artist', 'title', 'filename', 'length')
         extra_kwargs = {
             'filename': {
                 'validators': [],
@@ -61,7 +61,7 @@ class DraftPlaylistSerializer(serializers.ModelSerializer):
 class SongSerializer(serializers.ModelSerializer):
     class Meta:
         model = Song
-        fields = ('artist', 'name', 'filename')
+        fields = ('artist', 'title', 'filename')
         extra_kwargs = {
             'filename': {
                 'validators': [ExistsValidator(queryset=Song.objects.all())],
@@ -91,28 +91,22 @@ class PlaylistSerializer(serializers.ModelSerializer):
         return instance
 
 
-class PlaylistNameSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Playlist
-        fields = ['name']
-        extra_kwargs = {
-            'name': {
-                'validators': [ExistsValidator(queryset=Playlist.objects.all())],
-            }
-        }
-
-
 class ScheduleEntrySerializer(serializers.ModelSerializer):
-    playlists = PlaylistNameSerializer(many=True)
+    playlists = serializers.SlugRelatedField(many=True, slug_field='name', queryset=Playlist.objects.all())
 
     class Meta:
         model = ScheduleEntry
         fields = ('begin_datetime', 'playlists')
+        extra_kwargs = {
+            'playlists': {
+                'validators': [],
+            }
+        }
 
     def create(self, validated_data):
         begin_datetime = validated_data.pop('begin_datetime')
         playlists = validated_data.pop('playlists')
+        print(f"create SE, playlists: {playlists}")
         schedule_entry = ScheduleEntry.objects.create(begin_datetime=begin_datetime)
         for playlist in playlists:
             ScheduleEntryOrder.objects.create(schedule_entry=schedule_entry, playlist=playlist)
@@ -123,14 +117,9 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
         return instance
 
     def validate(self, data):
-        playlists_data = data.pop('playlists')
         begin_datetime = data['begin_datetime']
-        playlists = []
-        for playlist_data in playlists_data:
-            playlist_name = playlist_data['name']
-            playlist = Playlist.objects.get(name=playlist_name)
-            playlists.append(playlist)
-        duration = sum([p.length for p in playlists])
+        print(f"validate SE, playlists: {data['playlists']}")
+        duration = sum([p.length for p in data["playlists"]])
         closest_schedule_entries = ScheduleEntry.get_closest_to(begin_datetime)
         if closest_schedule_entries["before"]:
             entry_before = closest_schedule_entries["before"]
@@ -143,5 +132,6 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
             begin_of_next = entry_after.begin_datetime
             if end_of_current > begin_of_next:
                 raise ValidationError("ScheduleEntry must end before begin of next ScheduleEntry")
-        data["playlists"] = playlists
         return data
+
+

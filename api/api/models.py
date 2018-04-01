@@ -36,6 +36,9 @@ class Playlist(models.Model):
     def length(self) -> float:
         return sum([song.length for song in self.songs.all()])
 
+    def __unicode__(self):
+        return f"{self.name}"
+
 
 class PlaylistOrder(OrderedModel):
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
@@ -54,7 +57,7 @@ class ScheduleEntry(models.Model):
 
     # this method is on the model's manager
     @staticmethod
-    def get_closest_to(target_datetime) -> Dict[str, Song]:
+    def get_closest_to(target_datetime) -> Dict[str, 'ScheduleEntry']:
         closest_after = ScheduleEntry.objects.filter(begin_datetime__gt=target_datetime).order_by('begin_datetime')
         closest_before = ScheduleEntry.objects.filter(begin_datetime__lt=target_datetime).order_by('-begin_datetime')
 
@@ -81,7 +84,7 @@ class ScheduleEntryOrder(OrderedModel):
 # songs that may not yet be available
 class DraftSong(models.Model):
     artist = models.CharField(max_length=128)
-    name = models.CharField(max_length=128)
+    title = models.CharField(max_length=128)
     filename = models.CharField(max_length=256, unique=True)
     length = models.FloatField(blank=True)
 
