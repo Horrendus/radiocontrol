@@ -43,10 +43,9 @@ class Playlist(models.Model):
 class PlaylistOrder(OrderedModel):
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
     song = models.ForeignKey(Song, on_delete=models.CASCADE)
-    order_with_respect_to = 'playlist'
 
     class Meta:
-        ordering = ('playlist', 'order')
+        order_with_respect_to = 'playlist'
 
 
 # distinct entry in the schedule (from pause to pause)
@@ -75,10 +74,9 @@ class ScheduleEntry(models.Model):
 class ScheduleEntryOrder(OrderedModel):
     schedule_entry = models.ForeignKey(ScheduleEntry, on_delete=models.CASCADE)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
-    order_with_respect_to = 'schedule_entry'
 
     class Meta:
-        ordering = ('schedule_entry', 'order')
+        order_with_respect_to = 'schedule_entry'
 
 
 # songs that may not yet be available
@@ -99,7 +97,6 @@ class DraftPlaylist(models.Model):
 class DraftPlaylistOrder(OrderedModel):
     playlist = models.ForeignKey(DraftPlaylist, on_delete=models.CASCADE)
     song = models.ForeignKey(DraftSong, on_delete=models.CASCADE)
-    order_with_respect_to = 'playlist'
 
     class Meta:
-        ordering = ('playlist', 'order')
+        order_with_respect_to = 'playlist'
