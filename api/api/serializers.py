@@ -106,7 +106,6 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         begin_datetime = validated_data.pop('begin_datetime')
         playlists = validated_data.pop('playlists')
-        print(f"create SE, playlists: {playlists}")
         schedule_entry = ScheduleEntry.objects.create(begin_datetime=begin_datetime)
         for playlist in playlists:
             ScheduleEntryOrder.objects.create(schedule_entry=schedule_entry, playlist=playlist)
@@ -118,7 +117,6 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         begin_datetime = data['begin_datetime']
-        print(f"validate SE, playlists: {data['playlists']}")
         duration = sum([p.length for p in data["playlists"]])
         closest_schedule_entries = ScheduleEntry.get_closest_to(begin_datetime)
         if closest_schedule_entries["before"]:

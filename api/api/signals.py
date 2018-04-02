@@ -18,37 +18,44 @@
 import celery
 
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, post_delete
 
-from api.models import ScheduleEntry
+from api.models import ScheduleEntry, ScheduleEntryOrder
 from api.tasks import schedule_playlists
 
 
-@receiver(post_save, sender=ScheduleEntry, dispatch_uid='scheduleentry_postsave')
-def entry_postsave_handler(*args, **kwargs):
-    print("presave handler for schedule entry called")
+@receiver(post_save, sender=ScheduleEntryOrder, dispatch_uid='scheduleentry_order_postsave')
+def entry_order_postsave_handler(*args, **kwargs):
+    print(f"entry order postsave handler for schedule entry order called")
     instance = kwargs.get('instance')
+
     try:
-        obj = ScheduleEntry.objects.get(pk=instance.pk)
-    except ScheduleEntry.DoesNotExist:
+        obj = ScheduleEntryOrder.objects.get(pk=instance.pk)
+    except ScheduleEntryOrder.DoesNotExist:
         obj = instance
 
-    if obj.task_id:
-        celery.task.control.revoke(obj.task_id)
+    se = obj.schedule_entry
 
-    playlists = [playlist.name for playlist in obj.playlists.all()]
-    print(f"post save: scheduling playlists: {playlists}")
-    task = schedule_playlists.apply_async(eta=instance.begin_datetime, kwargs={'playlists': playlists})
-    instance.task_id = task.id
-    print(f"task id: {task.id}")
+    if se.task_id:
+        celery.task.control.revoke(se.task_id)
+        print(f"revoking task id: {se.task_id}")
+
+    playlists = [playlist.name for playlist in se.playlists.all()]
+    if playlists:
+        print(f"entry order postsave: scheduling playlists: {playlists}")
+        task = schedule_playlists.apply_async(eta=se.begin_datetime, kwargs={'playlists': playlists})
+        se.task_id = task.id
+        print(f"task id: {task.id}")
+    else:
+        se.task_id = ""
+    se.save()
 
 
-@receiver(pre_delete, sender=ScheduleEntry, dispatch_uid='scheduleentry_predelete')
-def entry_predelete_handler(*args, **kwargs):
+@receiver(post_delete, sender=ScheduleEntry, dispatch_uid='scheduleentry_postdelete')
+def entry_postdelete_handler(*args, **kwargs):
+    print(f"entry postdelete handler for schedule entry called")
     instance = kwargs.get('instance')
-    try:
-        obj = ScheduleEntry.objects.get(pk=instance.pk)
-    except ScheduleEntry.DoesNotExist:
-        obj = instance
 
-    celery.task.control.revoke(obj.task_id)
+    if instance.task_id:
+        celery.task.control.revoke(instance.task_id)
+        print(f"revoking task id: {instance.task_id}")

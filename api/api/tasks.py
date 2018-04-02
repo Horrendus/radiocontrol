@@ -30,6 +30,6 @@ def schedule_playlists(playlists: List[str]):
     print(f"Celery Task scheduling playlists {playlists}")
     for playlist in playlists:
         client.load(playlist)
-    client.play(1)
+    client.play(0)
     client.close()
     client.disconnect()
