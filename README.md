@@ -5,27 +5,34 @@ It was created because the existing control interfaces for streaming stations we
 
 ## Existing features (what it is capable of right now)
 
-* Login (Users need to be created via django admin interface)
+* add music to the MPD collection
+* add playlists (only via JSON atm)
 * Display scheduled playlists (playlists need to be added via django admin interface)
 * Add new entries to the schedule and check for scheduling conflicts
 * Start playing at the scheduled time via MPD
+* Remove
 
 ## Feature ideas (what it should be capable of, mostly in order of preference)
 
-* add music to the MPD collection
-* add playlists
-* check if every song of the playlist is available in the MPD collection
+* Authentication
+* upload playlists as m3u or xspf
 * preprocess music (mp3gain, mixramp)
 * public display of schedule
 * better scheduling
+** remove not yet started playlists when first playlist has already started
+** stop current playlist at some predefined moment
 * placeholder "playlists" for live streaming to icecast
 * ...
 
 # Project Structure
 
-* old_radiocontrol_app: Django Application that supports the existing features with a basic HTML frontend
 * api: Django 2.0 REST API - under development - rewrite of the old App (mostly) from scratch, will only offer a REST API
-* frontend: not existing yet - Frontend for the new API
+* frontends: diverse frontends for the API
+* old_radiocontrol_app: old Django 1 Application that supports some features with a basic HTML frontend
+
+## Frontends
+
+* qml_pyside: Frontend using QML - under development - Dependencies: Python 3.0, PySide 2, Qt5
 
 # Requirements & Installation
 
