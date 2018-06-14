@@ -1,10 +1,11 @@
+#!/usr/bin/env python3
 import sys
 
 import random
 
 from PySide2.QtQml import QQmlApplicationEngine
 
-from PySide2.QtCore import QAbstractListModel, QTimer
+from PySide2.QtCore import QAbstractListModel, QTimer, Slot
 from PySide2.QtGui import QGuiApplication
 
 
@@ -31,6 +32,7 @@ class PlaylistModel(QAbstractListModel):
     def roleNames(self):
         return dict(enumerate(self._COLUMNS))
 
+    @Slot()
     def populate(self):
         self._data = []
         for i in range(5):
