@@ -5,13 +5,13 @@ import random
 
 from PySide2.QtQml import QQmlApplicationEngine
 
-from PySide2.QtCore import QAbstractListModel, QTimer, Slot
+from PySide2.QtCore import QAbstractListModel, QTimer, Slot, QByteArray
 from PySide2.QtGui import QGuiApplication
 
 
 class PlaylistModel(QAbstractListModel):
 
-    _COLUMNS = ('name', 'length')
+    _COLUMNS = (QByteArray(b'name'), QByteArray(b'length'))
 
     def __init__(self, parent = None):
         QAbstractListModel.__init__(self, parent)
