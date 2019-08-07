@@ -20,42 +20,8 @@ from rest_framework.validators import ValidationError
 
 from datetime import timedelta
 
-from api.models import DraftSong, DraftPlaylist, DraftPlaylistOrder, Song, Playlist, PlaylistOrder, ScheduleEntry, \
-    ScheduleEntryOrder
+from api.models import Song, SongStatus, Playlist, PlaylistOrder, ScheduleEntry, ScheduleEntryOrder
 from api.validators import ExistsValidator
-
-
-class DraftSongSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DraftSong
-        fields = ('artist', 'title', 'filename', 'length')
-        extra_kwargs = {
-            'filename': {
-                'validators': [],
-            }
-        }
-
-
-class DraftPlaylistSerializer(serializers.ModelSerializer):
-    songs = DraftSongSerializer(many=True)
-
-    class Meta:
-        model = DraftPlaylist
-        fields = ('name', 'songs')
-
-    def create(self, validated_data):
-        name = validated_data.pop('name')
-        songs_data = validated_data.pop('songs')
-        playlist = DraftPlaylist.objects.create(name=name)
-        for song_data in songs_data:
-            song, created = DraftSong.objects.get_or_create(**song_data)
-            print(song, created)
-            DraftPlaylistOrder.objects.create(playlist=playlist, song=song)
-        return playlist
-
-    def update(self, instance, validated_data):
-        print("update not implemented yet")
-        return instance
 
 
 class SongSerializer(serializers.ModelSerializer):
@@ -119,6 +85,9 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
         begin_datetime = data['begin_datetime']
         duration = sum([p.length for p in data["playlists"]])
         closest_schedule_entries = ScheduleEntry.get_closest_to(begin_datetime)
+        for playlist in data["playlists"]:
+            if playlist.status == SongStatus.ERROR:
+                raise ValidationError(f"Can not schedule playlist {playlist.name} because of errors.")
         if closest_schedule_entries["before"]:
             entry_before = closest_schedule_entries["before"]
             end_of_before = entry_before.begin_datetime + timedelta(seconds=entry_before.length)
@@ -131,5 +100,3 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
             if end_of_current > begin_of_next:
                 raise ValidationError("ScheduleEntry must end before begin of next ScheduleEntry")
         return data
-
-

@@ -15,10 +15,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import enum
+
 from typing import Dict
 
 from django.db import models
 from ordered_model.models import OrderedModel
+
+
+class SongStatus(enum.Enum):
+    OK = "OK"
+    WARN = "WARNING"
+    ERROR = "ERROR"
 
 
 class Song(models.Model):
@@ -26,6 +34,7 @@ class Song(models.Model):
     title = models.CharField(max_length=128)
     filename = models.CharField(max_length=256, unique=True)
     length = models.IntegerField()
+    song_status = models.CharField(max_length=255, choices=[(status.name, status.value) for status in SongStatus])
 
 
 class Playlist(models.Model):
@@ -35,6 +44,16 @@ class Playlist(models.Model):
     @property
     def length(self) -> float:
         return sum([song.length for song in self.songs.all()])
+
+    @property
+    def status(self) -> SongStatus:
+        states = [song.song_status for song in self.songs.all()]
+        if SongStatus.ERROR in states:
+            return SongStatus.ERROR
+        elif SongStatus.WARN in states:
+            return SongStatus.WARN
+        else:
+            return SongStatus.OK
 
     def __unicode__(self):
         return f"{self.name}"
@@ -77,26 +96,3 @@ class ScheduleEntryOrder(OrderedModel):
 
     class Meta:
         order_with_respect_to = 'schedule_entry'
-
-
-# songs that may not yet be available
-class DraftSong(models.Model):
-    artist = models.CharField(max_length=128)
-    title = models.CharField(max_length=128)
-    filename = models.CharField(max_length=256, unique=True)
-    length = models.FloatField(blank=True)
-
-
-# generated from uploaded playlists and not all songs may yet be available
-# when all songs are available, it can be stored as a Playlist
-class DraftPlaylist(models.Model):
-    name = models.CharField(max_length=128, unique=True)
-    songs = models.ManyToManyField(DraftSong, through='DraftPlaylistOrder')
-
-
-class DraftPlaylistOrder(OrderedModel):
-    playlist = models.ForeignKey(DraftPlaylist, on_delete=models.CASCADE)
-    song = models.ForeignKey(DraftSong, on_delete=models.CASCADE)
-
-    class Meta:
-        order_with_respect_to = 'playlist'
