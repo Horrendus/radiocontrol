@@ -20,36 +20,33 @@ from rest_framework.validators import ValidationError
 
 from datetime import timedelta
 
-from api.models import Song, SongStatus, Playlist, PlaylistOrder, ScheduleEntry, ScheduleEntryOrder
+from api.models import Song, Playlist, PlaylistOrder, PlaylistEntry, PlaylistEntryStatus, ScheduleEntry, \
+    ScheduleEntryOrder
+
 from api.validators import ExistsValidator
 
 
-class SongSerializer(serializers.ModelSerializer):
+class PlaylistEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Song
-        fields = ('artist', 'title', 'filename')
-        extra_kwargs = {
-            'filename': {
-                'validators': [ExistsValidator(queryset=Song.objects.all())],
-            }
-        }
+        fields = ('artist', 'title', 'filename', 'length')
 
 
 class PlaylistSerializer(serializers.ModelSerializer):
-    songs = SongSerializer(many=True)
+    entries = PlaylistEntrySerializer(many=True)
 
     class Meta:
         model = Playlist
-        fields = ('name', 'songs')
+        fields = ('name', 'entries')
 
     def create(self, validated_data):
         name = validated_data.pop('name')
-        songs_data = validated_data.pop('songs')
+        entries_data = validated_data.pop('entries')
         playlist = Playlist.objects.create(name=name)
-        for song_data in songs_data:
-            song = Song.objects.get(filename=song_data["filename"])
-            print(song)
-            PlaylistOrder.objects.create(playlist=playlist, song=song)
+        for entry_data in entries_data:
+            entry_data["status"] = PlaylistEntryStatus.compute_status(**entry_data)
+            entry, created = PlaylistEntry.objects.get_or_create(**entry_data)
+            PlaylistOrder.objects.create(playlist=playlist, entry=entry)
         return playlist
 
     def update(self, instance, validated_data):
@@ -86,7 +83,7 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
         duration = sum([p.length for p in data["playlists"]])
         closest_schedule_entries = ScheduleEntry.get_closest_to(begin_datetime)
         for playlist in data["playlists"]:
-            if playlist.status == SongStatus.ERROR:
+            if playlist.status == PlaylistEntryStatus.ERROR:
                 raise ValidationError(f"Can not schedule playlist {playlist.name} because of errors.")
         if closest_schedule_entries["before"]:
             entry_before = closest_schedule_entries["before"]

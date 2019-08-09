@@ -41,30 +41,17 @@ def save_file(filename: str, file_data: bytes):
     process_file(filename)
 
 
-def validate(mediadata: Dict[str, str]):
-    valid = list()
-    valid.append('artist' in mediadata)
-    valid.append('title' in mediadata)
-    valid.append('filename' in mediadata)
-    valid.append('data' in mediadata)
-    return all(valid)
-
-
 def process_file(filename: str):
     # Postprocessing of file, e.g. mp3gain
     pass
 
 
-def save_media(mediadata: Dict[str, str]):
-    ok = validate(mediadata)
-    if ok:
-        filename = mediadata['filename']
-        base64_data_str = mediadata.pop('data')
-        base64_data = bytes(base64_data_str, 'UTF-8')
-        file_data = base64.b64decode(base64_data)
-        full_filename = music_root() + filename
-        save_file(full_filename, file_data)
-        Song.objects.create(**mediadata)
-        # TODO: mpd update
-        return True
-    return False
+def save_media(mediadata: Dict[str, str]) -> bool:
+    filename = mediadata['filename']
+    base64_data_str = mediadata.pop('data')
+    base64_data = bytes(base64_data_str, 'UTF-8')
+    file_data = base64.b64decode(base64_data)
+    full_filename = music_root() + filename
+    save_file(full_filename, file_data)
+    # TODO: mpd update
+    return True

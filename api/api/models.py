@@ -23,37 +23,61 @@ from django.db import models
 from ordered_model.models import OrderedModel
 
 
-class SongStatus(enum.Enum):
-    OK = "OK"
-    WARN = "WARNING"
-    ERROR = "ERROR"
-
-
 class Song(models.Model):
     artist = models.CharField(max_length=128)
     title = models.CharField(max_length=128)
     filename = models.CharField(max_length=256, unique=True)
     length = models.IntegerField()
-    song_status = models.CharField(max_length=255, choices=[(status.name, status.value) for status in SongStatus])
+
+
+class PlaylistEntryStatus(enum.Enum):
+    OK = "OK"
+    WARN = "WARNING"
+    ERROR = "ERROR"
+
+
+class PlaylistEntry(models.Model):
+    artist = models.CharField(max_length=128)
+    title = models.CharField(max_length=128)
+    filename = models.CharField(max_length=256)
+    length = models.IntegerField()
+    status = models.CharField(max_length=255, choices=[(status.name, status.value) for status in PlaylistEntryStatus])
+
+    class Meta:
+        unique_together = ("artist", "title", "filename", "length")
+
+    @staticmethod
+    def compute_status(artist, title, filename, length) -> PlaylistEntryStatus:
+        try:
+            song = Song.objects.get(filename=filename)
+            if song.artist == artist and song.title == title and song.length == length:
+                return PlaylistEntryStatus.OK
+            return PlaylistEntryStatus.WARN
+        except models.ObjectDoesNotExist:
+            return PlaylistEntryStatus.ERROR
+
+    def update_status(self):
+        self.status = PlaylistEntry.__class__.compute_status(self.artist, self.title, self.filename, self.length)
+        self.save()
 
 
 class Playlist(models.Model):
     name = models.CharField(max_length=128, unique=True)
-    songs = models.ManyToManyField(Song, through="PlaylistOrder")
+    entries = models.ManyToManyField(PlaylistEntry, through="PlaylistOrder")
 
     @property
     def length(self) -> float:
-        return sum([song.length for song in self.songs.all()])
+        return sum([entry.length for entry in self.entries.all()])
 
     @property
-    def status(self) -> SongStatus:
-        states = [song.song_status for song in self.songs.all()]
-        if SongStatus.ERROR in states:
-            return SongStatus.ERROR
-        elif SongStatus.WARN in states:
-            return SongStatus.WARN
+    def status(self) -> PlaylistEntryStatus:
+        states = [entry.status for entry in self.entries.all()]
+        if PlaylistEntryStatus.ERROR in states:
+            return PlaylistEntryStatus.ERROR
+        elif PlaylistEntryStatus.WARN in states:
+            return PlaylistEntryStatus.WARN
         else:
-            return SongStatus.OK
+            return PlaylistEntryStatus.OK
 
     def __unicode__(self):
         return f"{self.name}"
@@ -61,7 +85,7 @@ class Playlist(models.Model):
 
 class PlaylistOrder(OrderedModel):
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
-    song = models.ForeignKey(Song, on_delete=models.CASCADE)
+    entry = models.ForeignKey(PlaylistEntry, on_delete=models.CASCADE)
 
     class Meta:
         order_with_respect_to = 'playlist'

@@ -25,15 +25,15 @@ from django.conf import settings
 
 from rest_framework import generics
 
-from api.models import Song, Playlist, ScheduleEntry
-from api.serializers import SongSerializer, PlaylistSerializer, ScheduleEntrySerializer
+from api.models import Song, Playlist, ScheduleEntry, PlaylistEntry
+from api.serializers import PlaylistEntrySerializer, PlaylistSerializer, ScheduleEntrySerializer
 
 media_backend = import_module(settings.MEDIA_BACKEND)
 
 
 class SongListView(generics.ListAPIView):
     queryset = Song.objects.all()
-    serializer_class = SongSerializer
+    serializer_class = PlaylistEntrySerializer
 
 
 class PlaylistListView(generics.ListCreateAPIView):
@@ -65,9 +65,19 @@ class MediaCreateView(View):
     @staticmethod
     def post(request):
         mediadata = json.loads(request.body)
-        ok = media_backend.save_media(mediadata)
-        if ok:
-            return HttpResponse(status=201)
+        valid = list()
+        valid.append('artist' in mediadata)
+        valid.append('title' in mediadata)
+        valid.append('filename' in mediadata)
+        valid.append('data' in mediadata)
+        if all(valid):
+            save_ok = media_backend.save_media(mediadata)
+            if save_ok:
+                Song.objects.create(**mediadata)
+                playlist_entries = PlaylistEntry.objects.filter(filename=mediadata["filename"])
+                for playlist_entry in playlist_entries:
+                    playlist_entry.update_status()
+                return HttpResponse(status=201)
 
 
 class MediaReadUpdateDestroyView(View):

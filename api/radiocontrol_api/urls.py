@@ -18,15 +18,12 @@
 from django.contrib import admin
 from django.urls import path
 
-from api.views import DraftSongListView, DraftPlaylistListView, DraftPlaylistReadUpdateDestroyView, SongListView, \
-    PlaylistListView, PlaylistReadUpdateDestroyView, MediaCreateView, MediaReadUpdateDestroyView, \
+from api.views import SongListView, PlaylistListView, PlaylistReadUpdateDestroyView, \
+    MediaCreateView, MediaReadUpdateDestroyView, \
     ScheduleEntryListView  # , ScheduleEntryReadUpdateDestroyView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('draftsongs/', DraftSongListView.as_view()),
-    path('draftplaylist/<str:name>/', DraftPlaylistReadUpdateDestroyView.as_view()),
-    path('draftplaylists/', DraftPlaylistListView.as_view()),
     path('songs/', SongListView.as_view()),
     path('playlist/<str:name>/', PlaylistReadUpdateDestroyView.as_view()),
     path('playlists/', PlaylistListView.as_view()),
