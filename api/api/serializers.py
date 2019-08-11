@@ -28,7 +28,7 @@ from api.validators import ExistsValidator
 
 class PlaylistEntrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Song
+        model = PlaylistEntry
         fields = ('artist', 'title', 'filename', 'length')
 
 
@@ -44,7 +44,6 @@ class PlaylistSerializer(serializers.ModelSerializer):
         entries_data = validated_data.pop('entries')
         playlist = Playlist.objects.create(name=name)
         for entry_data in entries_data:
-            entry_data["status"] = PlaylistEntryStatus.compute_status(**entry_data)
             entry, created = PlaylistEntry.objects.get_or_create(**entry_data)
             PlaylistOrder.objects.create(playlist=playlist, entry=entry)
         return playlist

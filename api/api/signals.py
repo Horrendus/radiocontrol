@@ -18,9 +18,9 @@
 import celery
 
 from django.dispatch import receiver
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import pre_save, post_save, post_delete
 
-from api.models import ScheduleEntry, ScheduleEntryOrder
+from api.models import ScheduleEntry, ScheduleEntryOrder, Song, PlaylistEntry
 from api.tasks import schedule_playlists
 
 
@@ -59,3 +59,21 @@ def entry_postdelete_handler(*args, **kwargs):
     if instance.task_id:
         celery.task.control.revoke(instance.task_id)
         print(f"revoking task id: {instance.task_id}")
+
+
+@receiver(post_save, sender=Song, dispatch_uid='song_postsave')
+@receiver(post_delete, sender=Song, dispatch_uid='song_postdelete')
+def song_postsave_postdelete_handler(*args, **kwargs):
+    print("song postsave handler called")
+    song = kwargs.get('instance')
+    playlist_entries = PlaylistEntry.objects.filter(filename=song.filename)
+    for playlist_entry in playlist_entries:
+        playlist_entry.save()
+
+
+@receiver(pre_save, sender=PlaylistEntry, dispatch_uid='playlistentry_postsave')
+def playlistentry_postsave_handler(*args, **kwargs):
+    print("playlistentry postsave handler called")
+    playlist_entry = kwargs.get('instance')
+    playlist_entry.status = PlaylistEntry.compute_status(playlist_entry.artist, playlist_entry.title,
+                                                         playlist_entry.filename, playlist_entry.length)

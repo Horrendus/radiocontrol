@@ -57,7 +57,7 @@ class PlaylistEntry(models.Model):
             return PlaylistEntryStatus.ERROR
 
     def update_status(self):
-        self.status = PlaylistEntry.__class__.compute_status(self.artist, self.title, self.filename, self.length)
+        self.status = PlaylistEntry.compute_status(self.artist, self.title, self.filename, self.length)
         self.save()
 
 

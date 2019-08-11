@@ -23,7 +23,6 @@ from api.views import SongListView, PlaylistListView, PlaylistReadUpdateDestroyV
     ScheduleEntryListView  # , ScheduleEntryReadUpdateDestroyView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('songs/', SongListView.as_view()),
     path('playlist/<str:name>/', PlaylistReadUpdateDestroyView.as_view()),
     path('playlists/', PlaylistListView.as_view()),

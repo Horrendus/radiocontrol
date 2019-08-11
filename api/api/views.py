@@ -24,6 +24,7 @@ from django.http import HttpResponse
 from django.conf import settings
 
 from rest_framework import generics
+from rest_framework import mixins
 
 from api.models import Song, Playlist, ScheduleEntry, PlaylistEntry
 from api.serializers import PlaylistEntrySerializer, PlaylistSerializer, ScheduleEntrySerializer
@@ -36,9 +37,20 @@ class SongListView(generics.ListAPIView):
     serializer_class = PlaylistEntrySerializer
 
 
-class PlaylistListView(generics.ListCreateAPIView):
+class PlaylistListView(generics.ListAPIView):
     queryset = Playlist.objects.all()
     serializer_class = PlaylistSerializer
+
+
+class PlaylistCreateView(mixins.CreateModelMixin, generics.GenericAPIView):
+    serializer_class = PlaylistSerializer
+
+    def post(self, request, *args, **kwargs):
+        if request.FILES['playlist']:
+            # TODO: implement uploading & parsing m3u & xspf files
+            pass
+        else:
+            return self.create(request, *args, **kwargs)
 
 
 class PlaylistReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -60,7 +72,7 @@ class ScheduleEntryReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 class MediaCreateView(View):
 
-    http_method_names = ['post', 'head', 'options', 'trace']
+    http_method_names = ['post']
 
     @staticmethod
     def post(request):
@@ -74,15 +86,12 @@ class MediaCreateView(View):
             save_ok = media_backend.save_media(mediadata)
             if save_ok:
                 Song.objects.create(**mediadata)
-                playlist_entries = PlaylistEntry.objects.filter(filename=mediadata["filename"])
-                for playlist_entry in playlist_entries:
-                    playlist_entry.update_status()
                 return HttpResponse(status=201)
 
 
 class MediaReadUpdateDestroyView(View):
 
-    http_method_names = ['get', 'put', 'delete', 'head', 'options', 'trace']
+    http_method_names = ['get', 'put', 'delete']
 
     def get(self, request, *args, **kwargs):
         pass
