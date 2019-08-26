@@ -37,18 +37,20 @@ class SongListView(generics.ListAPIView):
     serializer_class = PlaylistEntrySerializer
 
 
-class PlaylistListView(generics.ListAPIView):
+class PlaylistListCreateView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
     queryset = Playlist.objects.all()
     serializer_class = PlaylistSerializer
 
-
-class PlaylistCreateView(mixins.CreateModelMixin, generics.GenericAPIView):
-    serializer_class = PlaylistSerializer
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        if request.FILES['playlist']:
+
+        if "playlist" in request:
+            file = request.FILES['playlist']
+            print("file found: ", file)
             # TODO: implement uploading & parsing m3u & xspf files
-            pass
+            return HttpResponse("file upload not implemented yet")
         else:
             return self.create(request, *args, **kwargs)
 
@@ -76,17 +78,13 @@ class MediaCreateView(View):
 
     @staticmethod
     def post(request):
-        mediadata = json.loads(request.body)
-        valid = list()
-        valid.append('artist' in mediadata)
-        valid.append('title' in mediadata)
-        valid.append('filename' in mediadata)
-        valid.append('data' in mediadata)
-        if all(valid):
-            save_ok = media_backend.save_media(mediadata)
+        if "data" in request.FILES:
+            save_ok = media_backend.save_media(request.FILES["data"])
             if save_ok:
-                Song.objects.create(**mediadata)
                 return HttpResponse(status=201)
+            return HttpResponse("Error: Could not save file", status=500)
+        else:
+            return HttpResponse("Error: Media upload needs filename & file data", status=500)
 
 
 class MediaReadUpdateDestroyView(View):

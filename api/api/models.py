@@ -27,7 +27,7 @@ class Song(models.Model):
     artist = models.CharField(max_length=128)
     title = models.CharField(max_length=128)
     filename = models.CharField(max_length=256, unique=True)
-    length = models.IntegerField()
+    length = models.FloatField()
 
 
 class PlaylistEntryStatus(enum.Enum):
@@ -50,7 +50,7 @@ class PlaylistEntry(models.Model):
     def compute_status(artist, title, filename, length) -> PlaylistEntryStatus:
         try:
             song = Song.objects.get(filename=filename)
-            if song.artist == artist and song.title == title and song.length == length:
+            if song.artist == artist and song.title == title and int(song.length) == length:
                 return PlaylistEntryStatus.OK
             return PlaylistEntryStatus.WARN
         except models.ObjectDoesNotExist:

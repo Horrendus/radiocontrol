@@ -14,6 +14,8 @@ celery = "*"
 "python-mpd2" = "*"
 django-ordered-model = "*"
 SQLAlchemy = "*"
+python-magic = "*"
+mutagen = "*"
 
 
 [dev-packages]
@@ -21,4 +23,3 @@ SQLAlchemy = "*"
 ipython = "*"
 ipdb = "*"
 requests = "*"
-mutagen = "*"
