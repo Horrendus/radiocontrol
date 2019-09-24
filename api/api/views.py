@@ -46,11 +46,13 @@ class PlaylistListCreateView(mixins.ListModelMixin, mixins.CreateModelMixin, gen
 
     def post(self, request, *args, **kwargs):
 
-        if "playlist" in request:
-            file = request.FILES['playlist']
-            print("file found: ", file)
-            # TODO: implement uploading & parsing m3u & xspf files
-            return HttpResponse("file upload not implemented yet")
+        if "playlist" in request.FILES:
+            playlist_file = request.FILES['playlist']
+            print("file found: ", playlist_file)
+            save_ok = media_backend.save_playlist(playlist_file)
+            if save_ok:
+                return HttpResponse(status=201)
+            return HttpResponse("Error: Could not save playlist", status=500)
         else:
             return self.create(request, *args, **kwargs)
 
