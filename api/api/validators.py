@@ -23,9 +23,9 @@ from rest_framework.exceptions import ValidationError
 
 class ExistsValidator(object):
 
-    message = 'No entry for this field exists.'
+    message = "No entry for this field exists."
 
-    def __init__(self, queryset, message=None, lookup='exact'):
+    def __init__(self, queryset, message=None, lookup="exact"):
         self.queryset = queryset
         self.serializer_field = None
         self.message = message or self.message
@@ -42,17 +42,17 @@ class ExistsValidator(object):
         # same as the serializer field name if `source=<>` is set.
         self.field_name = serializer_field.source_attrs[-1]
         # Determine the existing instance, if this is an update operation.
-        self.instance = getattr(serializer_field.parent, 'instance', None)
+        self.instance = getattr(serializer_field.parent, "instance", None)
 
     def filter_queryset(self, value, queryset):
         """
         Filter the queryset to all instances matching the given attribute.
         """
-        filter_kwargs = {'%s__%s' % (self.field_name, self.lookup): value}
+        filter_kwargs = {"%s__%s" % (self.field_name, self.lookup): value}
         return validators.qs_filter(queryset, **filter_kwargs)
 
     def __call__(self, value):
         queryset = self.queryset
         queryset = self.filter_queryset(value, queryset)
         if not validators.qs_exists(queryset):
-            raise ValidationError(self.message, code='exists')
+            raise ValidationError(self.message, code="exists")

@@ -26,41 +26,40 @@ from django.conf import settings
 from rest_framework import generics
 from rest_framework import mixins
 
-from api.models import Song, Playlist, ScheduleEntry, PlaylistEntry
-from api.serializers import PlaylistEntrySerializer, PlaylistSerializer, ScheduleEntrySerializer
+from api.models import Song, Playlist, ScheduleEntry
+from api.serializers import PlaylistSerializer, ScheduleEntrySerializer, SongSerializer
 
 media_backend = import_module(settings.MEDIA_BACKEND)
 
 
 class SongListView(generics.ListAPIView):
     queryset = Song.objects.all()
-    serializer_class = PlaylistEntrySerializer
+    serializer_class = SongSerializer
 
 
-class PlaylistListCreateView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+class PlaylistListCreateView(mixins.ListModelMixin, generics.GenericAPIView):
     queryset = Playlist.objects.all()
     serializer_class = PlaylistSerializer
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
+    @staticmethod
+    def post(request, *args, **kwargs):
 
         if "playlist" in request.FILES:
-            playlist_file = request.FILES['playlist']
+            playlist_file = request.FILES["playlist"]
             print("file found: ", playlist_file)
-            save_ok = media_backend.save_playlist(playlist_file)
-            if save_ok:
-                return HttpResponse(status=201)
-            return HttpResponse("Error: Could not save playlist", status=500)
+            media_backend.save_playlist(playlist_file)
+            return HttpResponse(status=201)
         else:
-            return self.create(request, *args, **kwargs)
+            return HttpResponse(status=400)
 
 
 class PlaylistReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Playlist.objects.all()
     serializer_class = PlaylistSerializer
-    lookup_field = 'name'
+    lookup_field = "name"
 
 
 class ScheduleEntryListView(generics.ListCreateAPIView):
@@ -68,15 +67,22 @@ class ScheduleEntryListView(generics.ListCreateAPIView):
     serializer_class = ScheduleEntrySerializer
 
 
-class ScheduleEntryReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+class ScheduleEntryCreateView(generics.CreateAPIView):
     queryset = ScheduleEntry.objects.all()
     serializer_class = ScheduleEntrySerializer
-    lookup_field = 'begin_time'
+
+    def perform_create(self, serializer):
+        print("DEBUG: perfom create Schedule Entry")
+        instance = serializer.save()
+
+
+class ScheduleEntryReadDestroyView(generics.RetrieveDestroyAPIView):
+    queryset = ScheduleEntry.objects.all()
 
 
 class MediaCreateView(View):
 
-    http_method_names = ['post']
+    http_method_names = ["post"]
 
     @staticmethod
     def post(request):
@@ -86,12 +92,14 @@ class MediaCreateView(View):
                 return HttpResponse(status=201)
             return HttpResponse("Error: Could not save file", status=500)
         else:
-            return HttpResponse("Error: Media upload needs filename & file data", status=500)
+            return HttpResponse(
+                "Error: Media upload needs filename & file data", status=500
+            )
 
 
 class MediaReadUpdateDestroyView(View):
 
-    http_method_names = ['get', 'put', 'delete']
+    http_method_names = ["get", "put", "delete"]
 
     def get(self, request, *args, **kwargs):
         pass

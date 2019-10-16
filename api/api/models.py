@@ -40,24 +40,39 @@ class PlaylistEntry(models.Model):
     artist = models.CharField(max_length=128)
     title = models.CharField(max_length=128)
     filename = models.CharField(max_length=256)
-    length = models.IntegerField()
-    status = models.CharField(max_length=255, choices=[(status.name, status.value) for status in PlaylistEntryStatus])
+    pe_length = models.IntegerField()
+    status = models.CharField(
+        max_length=255,
+        choices=[(status.name, status.value) for status in PlaylistEntryStatus],
+    )
+    song = models.ForeignKey(Song, null=True, on_delete=models.SET_NULL)
 
     class Meta:
-        unique_together = ("artist", "title", "filename", "length")
+        unique_together = ("artist", "title", "filename", "pe_length")
 
-    @staticmethod
-    def compute_status(artist, title, filename, length) -> PlaylistEntryStatus:
+    @property
+    def length(self) -> float:
+        if self.status == PlaylistEntryStatus.ERROR:
+            return self.pe_length
+        return self.song.length
+
+    def compute_status(self):
         try:
-            song = Song.objects.get(filename=filename)
-            if song.artist == artist and song.title == title and int(song.length) == length:
-                return PlaylistEntryStatus.OK
-            return PlaylistEntryStatus.WARN
+            song = Song.objects.get(filename=self.filename)
+            self.song = song
+            if (
+                song.artist.lower() == self.artist.lower()
+                and song.title.lower() == self.title.lower()
+                and int(song.length) == self.pe_length
+            ):
+                self.status = PlaylistEntryStatus.OK
+            else:
+                self.status = PlaylistEntryStatus.WARN
         except models.ObjectDoesNotExist:
-            return PlaylistEntryStatus.ERROR
+            self.status = PlaylistEntryStatus.ERROR
 
     def update_status(self):
-        self.status = PlaylistEntry.compute_status(self.artist, self.title, self.filename, self.length)
+        self.compute_status()
         self.save()
 
 
@@ -88,35 +103,42 @@ class PlaylistOrder(OrderedModel):
     entry = models.ForeignKey(PlaylistEntry, on_delete=models.CASCADE)
 
     class Meta:
-        order_with_respect_to = 'playlist'
+        order_with_respect_to = "playlist"
 
 
-# distinct entry in the schedule (from pause to pause)
+class MPDTask(models.Model):
+    begin_datetime = models.DateTimeField(unique=True)
+    playlists = models.ManyToManyField(Playlist, through="MPDTaskPlaylistOrder")
+
+
+class MPDTaskPlaylistOrder(OrderedModel):
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
+    mpd_task = models.ForeignKey(MPDTask, on_delete=models.CASCADE)
+
+    class Meta:
+        order_with_respect_to = "playlist"
+
+
 class ScheduleEntry(models.Model):
-    begin_datetime = models.DateTimeField(max_length=128, unique=True)
-    playlists = models.ManyToManyField(Playlist, through='ScheduleEntryOrder')
-    task_id = models.CharField(max_length=256)
+    begin_datetime = models.DateTimeField(unique=True)
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
 
     # this method is on the model's manager
     @staticmethod
-    def get_closest_to(target_datetime) -> Dict[str, 'ScheduleEntry']:
-        closest_after = ScheduleEntry.objects.filter(begin_datetime__gt=target_datetime).order_by('begin_datetime')
-        closest_before = ScheduleEntry.objects.filter(begin_datetime__lt=target_datetime).order_by('-begin_datetime')
+    def get_closest_to(target_datetime) -> Dict[str, "ScheduleEntry"]:
+        closest_after = ScheduleEntry.objects.filter(
+            begin_datetime__gt=target_datetime
+        ).order_by("begin_datetime")
+        closest_before = ScheduleEntry.objects.filter(
+            begin_datetime__lt=target_datetime
+        ).order_by("-begin_datetime")
 
         closest_entries = {
-            'before': closest_before.first(),
-            'after': closest_after.first()
+            "before": closest_before.first(),
+            "after": closest_after.first(),
         }
         return closest_entries
 
     @property
     def length(self):
-        return sum([playlist.length for playlist in self.playlists.all()])
-
-
-class ScheduleEntryOrder(OrderedModel):
-    schedule_entry = models.ForeignKey(ScheduleEntry, on_delete=models.CASCADE)
-    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
-
-    class Meta:
-        order_with_respect_to = 'schedule_entry'
+        return self.playlist.length

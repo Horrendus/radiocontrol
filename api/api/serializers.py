@@ -16,20 +16,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from rest_framework import serializers
-from rest_framework.validators import ValidationError
 
-from datetime import timedelta
-
-from api.models import Song, Playlist, PlaylistOrder, PlaylistEntry, PlaylistEntryStatus, ScheduleEntry, \
-    ScheduleEntryOrder
-
-from api.validators import ExistsValidator
+from api.models import Playlist, PlaylistOrder, PlaylistEntry, ScheduleEntry, Song
 
 
 class PlaylistEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaylistEntry
-        fields = ('artist', 'title', 'filename', 'length')
+        fields = ("artist", "title", "filename", "length", "status")
+
+
+class SongSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Song
+        fields = ("artist", "title", "filename", "length")
 
 
 class PlaylistSerializer(serializers.ModelSerializer):
@@ -37,11 +37,11 @@ class PlaylistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Playlist
-        fields = ('name', 'entries')
+        fields = ("name", "entries")
 
     def create(self, validated_data):
-        name = validated_data.pop('name')
-        entries_data = validated_data.pop('entries')
+        name = validated_data.pop("name")
+        entries_data = validated_data.pop("entries")
         playlist = Playlist.objects.create(name=name)
         for entry_data in entries_data:
             entry, created = PlaylistEntry.objects.get_or_create(**entry_data)
@@ -53,6 +53,14 @@ class PlaylistSerializer(serializers.ModelSerializer):
         return instance
 
 
+class ScheduleEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScheduleEntry
+        fields = ("begin_datetime", "playlist")
+
+
+# TODO: this needs a complete rewrite, best to start from scratch
+"""
 class ScheduleEntrySerializer(serializers.ModelSerializer):
     playlists = serializers.SlugRelatedField(many=True, slug_field='name', queryset=Playlist.objects.all())
 
@@ -96,3 +104,4 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
             if end_of_current > begin_of_next:
                 raise ValidationError("ScheduleEntry must end before begin of next ScheduleEntry")
         return data
+"""

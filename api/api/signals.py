@@ -20,60 +20,21 @@ import celery
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save, post_delete
 
-from api.models import ScheduleEntry, ScheduleEntryOrder, Song, PlaylistEntry
-from api.tasks import schedule_playlists
+from api.models import Song, PlaylistEntry
 
 
-@receiver(post_save, sender=ScheduleEntryOrder, dispatch_uid='scheduleentry_order_postsave')
-def entry_order_postsave_handler(*args, **kwargs):
-    print(f"entry order postsave handler for schedule entry order called")
-    instance = kwargs.get('instance')
-
-    try:
-        obj = ScheduleEntryOrder.objects.get(pk=instance.pk)
-    except ScheduleEntryOrder.DoesNotExist:
-        obj = instance
-
-    se = obj.schedule_entry
-
-    if se.task_id:
-        celery.task.control.revoke(se.task_id)
-        print(f"revoking task id: {se.task_id}")
-
-    playlists = [playlist.name for playlist in se.playlists.all()]
-    if playlists:
-        print(f"entry order postsave: scheduling playlists: {playlists}")
-        task = schedule_playlists.apply_async(eta=se.begin_datetime, kwargs={'playlists': playlists})
-        se.task_id = task.id
-        print(f"task id: {task.id}")
-    else:
-        se.task_id = ""
-    se.save()
-
-
-@receiver(post_delete, sender=ScheduleEntry, dispatch_uid='scheduleentry_postdelete')
-def entry_postdelete_handler(*args, **kwargs):
-    print(f"entry postdelete handler for schedule entry called")
-    instance = kwargs.get('instance')
-
-    if instance.task_id:
-        celery.task.control.revoke(instance.task_id)
-        print(f"revoking task id: {instance.task_id}")
-
-
-@receiver(post_save, sender=Song, dispatch_uid='song_postsave')
-@receiver(post_delete, sender=Song, dispatch_uid='song_postdelete')
+@receiver(post_save, sender=Song, dispatch_uid="song_postsave")
+@receiver(post_delete, sender=Song, dispatch_uid="song_postdelete")
 def song_postsave_postdelete_handler(*args, **kwargs):
     print("song postsave handler called")
-    song = kwargs.get('instance')
+    song = kwargs.get("instance")
     playlist_entries = PlaylistEntry.objects.filter(filename=song.filename)
     for playlist_entry in playlist_entries:
         playlist_entry.save()
 
 
-@receiver(pre_save, sender=PlaylistEntry, dispatch_uid='playlistentry_postsave')
+@receiver(pre_save, sender=PlaylistEntry, dispatch_uid="playlistentry_postsave")
 def playlistentry_postsave_handler(*args, **kwargs):
     print("playlistentry postsave handler called")
-    playlist_entry = kwargs.get('instance')
-    playlist_entry.status = PlaylistEntry.compute_status(playlist_entry.artist, playlist_entry.title,
-                                                         playlist_entry.filename, playlist_entry.length)
+    playlist_entry = kwargs.get("instance")
+    playlist_entry.compute_status()

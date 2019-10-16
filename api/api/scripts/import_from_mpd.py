@@ -30,18 +30,25 @@ def main() -> None:
 
     playlist_names = [p["playlist"] for p in client.listplaylists()]
 
-    playlists_mpd = [{
-        "name": playlist_name,
-        "songs": [s["file"] for s in client.listplaylistinfo(playlist_name)]
-    } for playlist_name in playlist_names]
+    playlists_mpd = [
+        {
+            "name": playlist_name,
+            "songs": [s["file"] for s in client.listplaylistinfo(playlist_name)],
+        }
+        for playlist_name in playlist_names
+    ]
 
-    songs = [Song(
-        **{
-            "title": s["title"],
-            "artist": s["artist"],
-            "length": s["time"],
-            "filename": s["file"]
-        }) for s in songs_mpd]
+    songs = [
+        Song(
+            **{
+                "title": s["title"],
+                "artist": s["artist"],
+                "length": s["time"],
+                "filename": s["file"],
+            }
+        )
+        for s in songs_mpd
+    ]
 
     Song.objects.bulk_create(songs)
     print("songs bulk created")

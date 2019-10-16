@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '3_51#u@!+xz9$)frw+*z_yile4q33^k@c@&sd8q2b2)u_c_^e!'
+SECRET_KEY = "3_51#u@!+xz9$)frw+*z_yile4q33^k@c@&sd8q2b2)u_c_^e!"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,64 +37,56 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     # from this project
-    'api',
+    "api",
     # from libraries
-    'corsheaders',
-    'ordered_model',
+    "corsheaders",
+    "ordered_model",
     # 'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 ]
 
 MIDDLEWARE = [
     # 'django.middleware.security.SecurityMiddleware',
     # 'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     # 'django.middleware.csrf.CsrfViewMiddleware',
     # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     # 'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'radiocontrol_api.urls'
+ROOT_URLCONF = "radiocontrol_api.urls"
 
 
-WSGI_APPLICATION = 'radiocontrol_api.wsgi.application'
+WSGI_APPLICATION = "radiocontrol_api.wsgi.application"
 
 # Password validation
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-    )
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
 }
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'Europe/Vienna'
+TIME_ZONE = "Europe/Vienna"
 
 USE_I18N = True
 
@@ -106,7 +98,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20971520  # 20 MB
 
@@ -115,23 +107,23 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 20971520  # 20 MB
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
 
 # CELERY settings
-CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
-CELERY_BROKER_URL = 'amqp://'
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = "db+sqlite:///results.sqlite"
+CELERY_BROKER_URL = "amqp://"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
 CELERY_ENABLE_UTC = False
-CELERY_TIMEZONE = 'Europe/Vienna'
+CELERY_TIMEZONE = "Europe/Vienna"
 
 # MPD settings
-MPD_SERVER = 'localhost'
+MPD_SERVER = "localhost"
 MPD_PORT = 6600
 
 # Media Backend
-MEDIA_BACKEND = 'api.file_mediabackend'
+MEDIA_BACKEND = "api.file_mediabackend"
