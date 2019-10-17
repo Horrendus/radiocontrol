@@ -52,7 +52,7 @@ class PlaylistEntry(models.Model):
 
     @property
     def length(self) -> float:
-        if self.status == PlaylistEntryStatus.ERROR:
+        if self.status == str(PlaylistEntryStatus.ERROR):
             return self.pe_length
         return self.song.length
 
@@ -65,11 +65,11 @@ class PlaylistEntry(models.Model):
                 and song.title.lower() == self.title.lower()
                 and int(song.length) == self.pe_length
             ):
-                self.status = PlaylistEntryStatus.OK
+                self.status = str(PlaylistEntryStatus.OK)
             else:
-                self.status = PlaylistEntryStatus.WARN
+                self.status = str(PlaylistEntryStatus.WARN)
         except models.ObjectDoesNotExist:
-            self.status = PlaylistEntryStatus.ERROR
+            self.status = str(PlaylistEntryStatus.ERROR)
 
     def update_status(self):
         self.compute_status()
@@ -85,16 +85,19 @@ class Playlist(models.Model):
         return sum([entry.length for entry in self.entries.all()])
 
     @property
-    def status(self) -> PlaylistEntryStatus:
+    def status(self) -> str:
         states = [entry.status for entry in self.entries.all()]
-        if PlaylistEntryStatus.ERROR in states:
-            return PlaylistEntryStatus.ERROR
-        elif PlaylistEntryStatus.WARN in states:
-            return PlaylistEntryStatus.WARN
+        error_state = str(PlaylistEntryStatus.ERROR)
+        warn_state = str(PlaylistEntryStatus.WARN)
+        ok_state = str(PlaylistEntryStatus.OK)
+        if error_state in states:
+            return error_state
+        elif warn_state in states:
+            return warn_state
         else:
-            return PlaylistEntryStatus.OK
+            return ok_state
 
-    def __unicode__(self):
+    def __str__(self):
         return f"{self.name}"
 
 

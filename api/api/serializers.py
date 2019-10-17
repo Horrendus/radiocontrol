@@ -21,6 +21,8 @@ from api.models import Playlist, PlaylistOrder, PlaylistEntry, ScheduleEntry, So
 
 
 class PlaylistEntrySerializer(serializers.ModelSerializer):
+    status = serializers.Field
+
     class Meta:
         model = PlaylistEntry
         fields = ("artist", "title", "filename", "length", "status")
@@ -37,7 +39,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Playlist
-        fields = ("name", "entries")
+        fields = ("name", "entries", "status", "length")
 
     def create(self, validated_data):
         name = validated_data.pop("name")
@@ -57,51 +59,3 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduleEntry
         fields = ("begin_datetime", "playlist")
-
-
-# TODO: this needs a complete rewrite, best to start from scratch
-"""
-class ScheduleEntrySerializer(serializers.ModelSerializer):
-    playlists = serializers.SlugRelatedField(many=True, slug_field='name', queryset=Playlist.objects.all())
-
-    class Meta:
-        model = ScheduleEntry
-        fields = ('begin_datetime', 'playlists')
-        extra_kwargs = {
-            'playlists': {
-                'validators': [],
-            }
-        }
-
-    def create(self, validated_data):
-        begin_datetime = validated_data.pop('begin_datetime')
-        playlists = validated_data.pop('playlists')
-        schedule_entry = ScheduleEntry.objects.create(begin_datetime=begin_datetime)
-        for playlist in playlists:
-            ScheduleEntryOrder.objects.create(schedule_entry=schedule_entry, playlist=playlist)
-        return schedule_entry
-
-    def update(self, instance, validated_data):
-        print("update not implemented yet")
-        return instance
-
-    def validate(self, data):
-        begin_datetime = data['begin_datetime']
-        duration = sum([p.length for p in data["playlists"]])
-        closest_schedule_entries = ScheduleEntry.get_closest_to(begin_datetime)
-        for playlist in data["playlists"]:
-            if playlist.status == PlaylistEntryStatus.ERROR:
-                raise ValidationError(f"Can not schedule playlist {playlist.name} because of errors.")
-        if closest_schedule_entries["before"]:
-            entry_before = closest_schedule_entries["before"]
-            end_of_before = entry_before.begin_datetime + timedelta(seconds=entry_before.length)
-            if end_of_before > begin_datetime:
-                raise ValidationError("ScheduleEntry must begin after end of last ScheduleEntry")
-        if closest_schedule_entries["after"]:
-            entry_after = closest_schedule_entries["after"]
-            end_of_current = begin_datetime + timedelta(seconds=duration)
-            begin_of_next = entry_after.begin_datetime
-            if end_of_current > begin_of_next:
-                raise ValidationError("ScheduleEntry must end before begin of next ScheduleEntry")
-        return data
-"""
