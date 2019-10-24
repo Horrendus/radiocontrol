@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
-
 from importlib import import_module
 
 from django.views import View
@@ -28,8 +26,7 @@ from rest_framework import mixins
 
 from api.models import Song, Playlist, ScheduleEntry
 from api.serializers import PlaylistSerializer, ScheduleEntrySerializer, SongSerializer
-
-media_backend = import_module(settings.MEDIA_BACKEND)
+from api import file_mediabackend as media_backend
 
 
 class SongListView(generics.ListAPIView):

@@ -124,6 +124,3 @@ CELERY_TIMEZONE = "Europe/Vienna"
 # MPD settings
 MPD_SERVER = "localhost"
 MPD_PORT = 6600
-
-# Media Backend
-MEDIA_BACKEND = "api.file_mediabackend"
