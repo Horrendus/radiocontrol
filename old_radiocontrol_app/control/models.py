@@ -47,7 +47,7 @@ class ScheduleEntry(models.Model):
 
     def clean(self):
         print("model clean")
-        if timezone.now() > (self.begin_time - timedelta(seconds=1)): # TODO: change timedelta to 30 min
+        if timezone.now() > (self.begin_time - timedelta(seconds=1)):
             raise ValidationError("Must schedule 1 second in advance")
 
         next = ScheduleEntry.objects.filter(begin_time__gte=self.begin_time).order_by("begin_time").first()
