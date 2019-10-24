@@ -21,13 +21,17 @@ import re
 from api.models import Song, PlaylistEntry, Playlist, PlaylistOrder
 
 from django.core.files.uploadedfile import UploadedFile
+from django.conf import settings
 from rest_framework.exceptions import APIException
 
 from mutagen import mp3
 
+import mpd
+
 from typing import Tuple, List
 
-MEDIA_ROOT = "/tmp/var/lib/mpd/"
+# TODO: this must be in settings, so that it can be overriden locally
+MEDIA_ROOT = "/var/lib/mpd_test/"
 
 EXTINF = "#EXTINF"
 
@@ -64,15 +68,17 @@ def create_song(full_filename: str) -> bool:
 
 
 def save_media(file_data: UploadedFile) -> bool:
+    # TODO: refactor this to use exceptions
     print(f"Name: {file_data.name}, Type: {file_data.content_type}")
-    print(type(file_data))
+    if Song.objects.filter(filename=file_data.name).exists():
+        return False
     full_filename = music_root() + file_data.name
     os.makedirs(os.path.dirname(full_filename), exist_ok=True)
     with open(full_filename, "wb") as f:
         f.write(file_data.read())
     process_file(full_filename)
     if create_song(full_filename):
-        # TODO: mpd update
+        do_mpd_update()
         return True
     return False
 
@@ -83,6 +89,8 @@ def save_playlist(file_data: UploadedFile):
     playlist_name = os.path.basename(full_playlist_name)
     if file_extension.lower() != ".m3u":
         raise APIException("unsupported file type")
+    if Playlist.objects.filter(name=playlist_name).exists():
+        raise APIException("playlist with same name already exists")
     playlist_content = file_data.read()
     full_filename = playlist_root() + os.path.basename(file_data.name)
     os.makedirs(os.path.dirname(full_filename), exist_ok=True)
@@ -91,12 +99,9 @@ def save_playlist(file_data: UploadedFile):
     playlist_entries = parse_m3u_playlist(str(playlist_content, "UTF-8").split("\n"))
     p = Playlist.objects.create(name=playlist_name)
     for entry in playlist_entries:
+        print(entry)
         pe, _ = PlaylistEntry.objects.get_or_create(
-            playlist=p,
-            pe_length=entry[0],
-            artist=entry[1],
-            title=entry[2],
-            filename=entry[3],
+            pe_length=entry[0], artist=entry[1], title=entry[2], filename=entry[3]
         )
         PlaylistOrder.objects.create(playlist=p, entry=pe)
 
@@ -146,3 +151,11 @@ def parse_m3u_playlist_entry(tag: str) -> Tuple[int, str, str]:
         if not artist or not title:
             raise APIException("invalid extinf line: artist or title empty")
         return length, artist, title
+
+
+def do_mpd_update():
+    # TODO: we need the client in different areas of the application, should be refactored to only connect once
+    # TODO: connection timeout??
+    mpd_client = mpd.MPDClient()
+    mpd_client.connect(settings.MPD_SERVER, settings.MPD_PORT)
+    mpd_client.update()

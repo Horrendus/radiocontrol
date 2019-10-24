@@ -76,7 +76,7 @@ def upload_song(song: str):
     upload_url = RADIOCONTROL_BASEURL + "media/"
     r = requests.post(upload_url, files={"data": open(song, "rb")})
     if not r.ok:
-        print("error uploading song")
+        print(f"error uploading song {song}")
 
 
 if __name__ == "__main__":
