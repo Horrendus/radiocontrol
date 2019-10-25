@@ -17,6 +17,7 @@
 
 import os
 import re
+import html
 
 from api.models import Song, PlaylistEntry, Playlist, PlaylistOrder
 
@@ -109,7 +110,6 @@ def save_playlist(file_data: UploadedFile):
 def parse_m3u_playlist(playlist_content) -> List[Tuple[int, str, str, str]]:
     if playlist_content[0] != "#EXTM3U":
         raise APIException("only EXTM3U format supported")
-    # TOOD: using os basename() should be easier than this regex substitution
     regex = re.compile("/.*/")
     files = [
         regex.sub("", line).strip()
@@ -124,7 +124,8 @@ def parse_m3u_playlist(playlist_content) -> List[Tuple[int, str, str, str]]:
         raise APIException("invalid playlist, different number of tags & files")
     for i in range(len(tags)):
         length, artist, title = parse_m3u_playlist_entry(tags[i])
-        playlist_entries.append((length, artist, title, files[i]))
+        filename = html.unescape(files[i])
+        playlist_entries.append((length, artist, title, filename))
     return playlist_entries
 
 
@@ -146,8 +147,10 @@ def parse_m3u_playlist_entry(tag: str) -> Tuple[int, str, str]:
             raise APIException("invalid extinf line: no artist seperator found")
         if len(tag) < (artist_seperator_position + 2):
             raise APIException("invalid extinf line: tag doesnt have title")
-        artist = tag[length_seperator_position + 1 : artist_seperator_position].strip()
-        title = tag[artist_seperator_position + 1 :].strip()
+        artist = html.unescape(
+            tag[length_seperator_position + 1 : artist_seperator_position].strip()
+        )
+        title = html.unescape(tag[artist_seperator_position + 1 :].strip())
         if not artist or not title:
             raise APIException("invalid extinf line: artist or title empty")
         return length, artist, title
