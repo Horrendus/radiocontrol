@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import enum
 
 from typing import Dict
@@ -145,3 +146,9 @@ class ScheduleEntry(models.Model):
     @property
     def length(self):
         return self.playlist.length
+
+    @property
+    def end_datetime(self):
+        return self.begin_datetime + datetime.timedelta(
+            seconds=int(self.playlist.length)
+        )

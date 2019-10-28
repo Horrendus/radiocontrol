@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
 from rest_framework import serializers
 
 from api.models import Playlist, PlaylistOrder, PlaylistEntry, ScheduleEntry, Song
@@ -56,6 +58,46 @@ class PlaylistSerializer(serializers.ModelSerializer):
 
 
 class ScheduleEntrySerializer(serializers.ModelSerializer):
+    end_datetime = serializers.ReadOnlyField()
+
     class Meta:
         model = ScheduleEntry
-        fields = ("begin_datetime", "playlist")
+        fields = ("playlist", "begin_datetime", "end_datetime")
+
+    @staticmethod
+    def validate_playlist(playlist):
+        print(f"validating playlist")
+        if playlist.status == "PlaylistEntryStatus.ERROR":
+            raise serializers.ValidationError("Can not schedule a playlist with errors")
+        return playlist
+
+    @staticmethod
+    def validate_begin_datetime(begin_datetime):
+        print(f"validating datetime {begin_datetime}")
+        is_future = begin_datetime > (
+            datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
+        )
+        if not is_future:
+            raise serializers.ValidationError(
+                "begin_datetime not in the future (ts > now + 5min)"
+            )
+        return begin_datetime
+
+    def validate(self, attrs):
+        print("object level validation")
+        print(f"attrs: {attrs}")
+        playlist = attrs["playlist"]
+        begin_datetime = attrs["begin_datetime"]
+        closest_schedule_entries = ScheduleEntry.get_closest_to(begin_datetime)
+        print(f"Closest: {closest_schedule_entries}")
+        end_datetime = begin_datetime + datetime.timedelta(seconds=int(playlist.length))
+        print(f"calculated playlist time: {begin_datetime} till {end_datetime}")
+        if begin_datetime < closest_schedule_entries["before"].end_datetime:
+            raise serializers.ValidationError(
+                "Can not schedule: begin_time before the end of the previous schedule entry"
+            )
+        if end_datetime < closest_schedule_entries["after"].begin_datetime:
+            raise serializers.ValidationError(
+                "Can not schedule: end_time before the end of the next schedule entry"
+            )
+        return attrs

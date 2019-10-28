@@ -68,10 +68,6 @@ class ScheduleEntryCreateView(generics.CreateAPIView):
     queryset = ScheduleEntry.objects.all()
     serializer_class = ScheduleEntrySerializer
 
-    def perform_create(self, serializer):
-        print("DEBUG: perfom create Schedule Entry")
-        instance = serializer.save()
-
 
 class ScheduleEntryReadDestroyView(generics.RetrieveDestroyAPIView):
     queryset = ScheduleEntry.objects.all()
