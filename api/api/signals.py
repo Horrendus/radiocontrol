@@ -47,8 +47,8 @@ def playlistentry_postsave_handler(*args, **kwargs):
     playlist_entry.compute_status()
 
 
-@receiver(pre_save, sender=ScheduleEntry, dispatch_uid="scheduleentry_presave")
-def entry_presave_handler(*args, **kwargs):
+@receiver(post_save, sender=ScheduleEntry, dispatch_uid="scheduleentry_postsave")
+def entry_postsave_handler(*args, **kwargs):
     instance = kwargs.get("instance")
     try:
         schedule_entry = ScheduleEntry.objects.get(pk=instance.pk)

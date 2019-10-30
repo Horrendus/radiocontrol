@@ -84,4 +84,6 @@ if __name__ == "__main__":
         print("Usage: read_and_upload_m3u.py filename.m3u")
         exit(1)
     filename = sys.argv[1]
+    if len(sys.argv) >= 3:
+        RADIOCONTROL_BASEURL = sys.argv[2]
     parse_playlist(filename)

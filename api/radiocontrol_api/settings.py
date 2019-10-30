@@ -28,9 +28,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = "3_51#u@!+xz9$)frw+*z_yile4q33^k@c@&sd8q2b2)u_c_^e!"
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# TODO: this needs to be seperated into a production and debug settings
 DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -112,13 +112,13 @@ DATABASES = {
 }
 
 # CELERY settings
-CELERY_RESULT_BACKEND = "db+sqlite:///results.sqlite"
-CELERY_BROKER_URL = "amqp://"
+CELERY_BROKER_URL = "redis://redis:6379"
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_TASK_SERIALIZER = "json"
-CELERY_ENABLE_UTC = False
-CELERY_TIMEZONE = "Europe/Vienna"
+
+CELERY_RESULT_BACKEND = "db+sqlite:///results.sqlite"
+CELERY_ENABLE_UTC = True
 
 # MPD settings
-MPD_SERVER = "localhost"
-MPD_PORT = 6600
+MPD_SERVER = os.getenv("RADIO_MPD_SERVER", "localhost")
+MPD_PORT = os.getenv("RADIO_MPD_PORT", 6600)
