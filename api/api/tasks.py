@@ -23,13 +23,15 @@ from typing import List
 
 
 @shared_task
-def schedule_playlists(playlists: List[str]):
+def schedule_playlists(playlists: List[str], append=False):
     client = MPDClient()
     client.connect(settings.MPD_SERVER, settings.MPD_PORT)
-    client.clear()
+    if not append:
+        client.clear()
     print(f"Celery Task scheduling playlists {playlists}")
     for playlist in playlists:
         client.load(playlist)
-    client.play(0)
+    if not append:
+        client.play(0)
     client.close()
     client.disconnect()

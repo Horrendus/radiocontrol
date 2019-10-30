@@ -110,19 +110,6 @@ class PlaylistOrder(OrderedModel):
         order_with_respect_to = "playlist"
 
 
-class MPDTask(models.Model):
-    begin_datetime = models.DateTimeField(unique=True)
-    playlists = models.ManyToManyField(Playlist, through="MPDTaskPlaylistOrder")
-
-
-class MPDTaskPlaylistOrder(OrderedModel):
-    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
-    mpd_task = models.ForeignKey(MPDTask, on_delete=models.CASCADE)
-
-    class Meta:
-        order_with_respect_to = "playlist"
-
-
 class ScheduleEntry(models.Model):
     begin_datetime = models.DateTimeField(unique=True)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
@@ -152,3 +139,24 @@ class ScheduleEntry(models.Model):
         return self.begin_datetime + datetime.timedelta(
             seconds=int(self.playlist.length)
         )
+
+
+class MPDTask(models.Model):
+    task_id = models.CharField(max_length=256)
+    schedule_entries = models.ManyToManyField(
+        ScheduleEntry, through="MPDTaskScheduleEntryOrder"
+    )
+
+    @property
+    def begin_datetime(self):
+        if self.schedule_entries.objects.all():
+            return self.schedule_entries.objects.first().begin_datetime
+        return None
+
+
+class MPDTaskScheduleEntryOrder(OrderedModel):
+    schedule_entry = models.OneToOneField(ScheduleEntry, on_delete=models.CASCADE)
+    mpd_task = models.ForeignKey(MPDTask, on_delete=models.CASCADE)
+
+    class Meta:
+        order_with_respect_to = "schedule_entry"

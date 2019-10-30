@@ -66,25 +66,25 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def validate_playlist(playlist):
-        print(f"validating playlist")
         if playlist.status == "PlaylistEntryStatus.ERROR":
             raise serializers.ValidationError("Can not schedule a playlist with errors")
         return playlist
 
     @staticmethod
     def validate_begin_datetime(begin_datetime):
-        print(f"validating datetime {begin_datetime}")
+        # TODO: timedelta needed to schedule ahead should be configurable
+        schedule_ahead_minutes = 2
         is_future = begin_datetime > (
-            datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
+            datetime.datetime.utcnow()
+            + datetime.timedelta(minutes=schedule_ahead_minutes)
         )
         if not is_future:
             raise serializers.ValidationError(
-                "begin_datetime not in the future (ts > now + 5min)"
+                f"begin_datetime not in the future (ts > now + {schedule_ahead_minutes}min)"
             )
         return begin_datetime
 
     def validate(self, attrs):
-        print("object level validation")
         print(f"attrs: {attrs}")
         playlist = attrs["playlist"]
         begin_datetime = attrs["begin_datetime"]
@@ -92,11 +92,17 @@ class ScheduleEntrySerializer(serializers.ModelSerializer):
         print(f"Closest: {closest_schedule_entries}")
         end_datetime = begin_datetime + datetime.timedelta(seconds=int(playlist.length))
         print(f"calculated playlist time: {begin_datetime} till {end_datetime}")
-        if begin_datetime < closest_schedule_entries["before"].end_datetime:
+        if (
+            closest_schedule_entries["before"]
+            and begin_datetime < closest_schedule_entries["before"].end_datetime
+        ):
             raise serializers.ValidationError(
                 "Can not schedule: begin_time before the end of the previous schedule entry"
             )
-        if end_datetime < closest_schedule_entries["after"].begin_datetime:
+        if (
+            closest_schedule_entries["after"]
+            and end_datetime < closest_schedule_entries["after"].begin_datetime
+        ):
             raise serializers.ValidationError(
                 "Can not schedule: end_time before the end of the next schedule entry"
             )

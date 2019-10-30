@@ -32,7 +32,7 @@ import mpd
 from typing import Tuple, List
 
 # TODO: this must be in settings, so that it can be overriden locally
-MEDIA_ROOT = "/var/lib/mpd_test/"
+MEDIA_ROOT = "/var/lib/mpd/"
 
 EXTINF = "#EXTINF"
 
