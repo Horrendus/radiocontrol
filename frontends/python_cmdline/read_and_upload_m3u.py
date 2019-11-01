@@ -2,7 +2,7 @@
 
 # Script to upload a playlist & all it's songs to the radiocontrol API
 #
-# Copyright (C) 2018 Stefan Derkits <stefan@derkits.at>
+# Copyright (C) 2018 - 2019 Stefan Derkits <stefan@derkits.at>
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -18,11 +18,8 @@ import sys
 import re
 import os
 import requests
-import json
 
 from mutagen.mp3 import MP3
-
-from typing import Dict, Any
 
 RADIOCONTROL_BASEURL = "http://localhost:8000/"
 

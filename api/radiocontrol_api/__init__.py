@@ -1,6 +1,6 @@
 # REST API Backend for the Radiocontrol Project
 #
-# Copyright (C) 2017 Stefan Derkits <stefan@derkits.at>
+# Copyright (C) 2017 - 2019 Stefan Derkits <stefan@derkits.at>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by

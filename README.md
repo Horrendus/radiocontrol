@@ -5,41 +5,45 @@ It was created because the existing control interfaces for streaming stations we
 
 ## Existing features (what it is capable of right now)
 
+Note: this lists the features of the backend. Not all is yet accessible via frontend or scripts
+
 * add music to the MPD collection
-* add playlists (only via JSON atm)
-* Display scheduled playlists (playlists need to be added via django admin interface)
+* add playlists (as m3u)
+* Status check of playlists (do the files exist? are the tags as expected?)
+* get schedule entries
 * Add new entries to the schedule and check for scheduling conflicts
 * Start playing at the scheduled time via MPD
-* Remove
 
 ## Feature ideas (what it should be capable of, mostly in order of preference)
 
-* Authentication
-* upload playlists as m3u or xspf
 * preprocess music (mp3gain, mixramp)
-* public display of schedule
+* remove or change playlists
+* schedule & remove playlists by name
+* remove schedule entries
 * better scheduling
-** remove not yet started playlists when first playlist has already started
-** stop current playlist at some predefined moment
-* placeholder "playlists" for live streaming to icecast
+** see TODOs (schedule playlists after, before, in-between existing schedule entries)
+* allow more flexible backend settings, seperate debug from production settings
+* upload playlists as xspf
+* Authentication
+* placeholder schedule entries for live streaming to icecast
 * ...
 
 # Project Structure
 
 * api: Django 2.0 REST API - under development - rewrite of the old App (mostly) from scratch, will only offer a REST API
 * frontends: diverse frontends for the API
-* old_radiocontrol_app: old Django 1 Application that supports some features with a basic HTML frontend
 
 ## Frontends
 
-* qml_pyside: Frontend using QML - under development - Dependencies: Python 3.0, PySide 2, Qt5
+* web: Vue.js 2.0 frontend - under Development
+* python_cmdline: Python scripts to access the API
 
 # Requirements & Installation
 
 ## Requirements
 
-* Python 3 (check requirements.txt/Pipfile for Python dependencies)
-* rabbitmq (for celery)
+* Python 3 (check Pipfile for Python dependencies)
+* redis (for celery)
 * mpd
 
 # Installation
@@ -50,37 +54,25 @@ The preferred & tested installation of this application is in a Docker container
 
 ### Build image
 
-To build the container image use the following command:
+To build the container for the API image use the following command:
 
 ```bash
-docker docker build -t radiocontrol:latest
+cd api
+docker docker build -t radiocontrol_api:latest
 ```
-
-### Data directory
-
-Create a data directory (used to store the radiocontrol & celery databases). From now on the data directory will be referenced as **/data/radiocontrol**
-
-### SSL
-
-When run in production mode, this application requires SSL. If you don't have a certificate & key yet, use the following commands to generate them:
-
-```bash
-openssl genrsa -out radiocontrol.key 2048
-openssl req -new -key radiocontrol.key -out radiocontrol.csr
-openssl x509 -req -days 3650 -in radiocontrol.csr -signkey radiocontrol.key -out radiocontrol.crt
-```
-
-The configuration expects *radiocontrol.key* & *radiocontrol.crt* to be in the **/data/radiocontrol/certs/** directory.
 
 ### Run image
 
-If mpd is running in another docker image, you need to link it to this container. Also if rabbitmq is running in another container, link that one to.
+MPD Server can be set via environment variables in the API container.
 
-```bash
-docker run --name=radiocontrol --link mpd:mpd --link rabbitmq:rabbitmq -e -e 'RADIO_MPD_HOST=radio' -e 'RADIO_MPD_PORT=6600' \
--e 'RADIO_SECRET_KEY=enter-secret-key-here' -e 'RADIO_BROKER_URL=amqp://guest:guest@rabbitmq:5672//' \
--e 'DJANGO_SETTINGS_MODULE=radiocontrol.settings.production' -d -it -p 443:443 -v /data/radiocontrol:/data radiocontrol
-```
+The example docker-compose.yml file in this project starts Redis & Celery and uses the MPD server on the host.
+
+# Similar projects
+
+* Airtime: https://github.com/sourcefabric/airtime
+* AuRa: https://gitlab.servus.at/autoradio
+* AzuraCast: https://github.com/AzuraCast/AzuraCast
+
 
 # Author
 
