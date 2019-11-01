@@ -30,7 +30,7 @@ Note: this lists the features of the backend. Not all is yet accessible via fron
 
 # Project Structure
 
-* api: Django 2.0 REST API - under development - rewrite of the old App (mostly) from scratch, will only offer a REST API
+* api: Django 2.0 REST API - under development
 * frontends: diverse frontends for the API
 
 ## Frontends
