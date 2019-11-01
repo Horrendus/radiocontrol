@@ -20,17 +20,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <template>
     <div>
         <h1>Playlists</h1>
-        <ul>
-            <li v-for="playlist in playlists"
-                :key="playlist.name">{{playlist.name}} : {{playlist.status}} - {{playlist.length}}</li>
-        </ul>
+        <Playlist v-for="playlist in playlists"
+            :key="playlist.name" :playlist="playlist"></Playlist>
     </div>
 </template>
 
 <script>
+    import Playlist from "./Playlist";
+
     export default {
         name: "Playlists",
-        data: function () {
+        components: {Playlist},
+        data () {
             return {
                 playlists: []
             }
@@ -38,9 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         methods: {
             async fetchPlaylists(endpoint) {
                 const res = await fetch(endpoint);
-                const playlists = await res.json();
-
-                return playlists;
+                return await res.json();
             },
         },
         mounted() {
