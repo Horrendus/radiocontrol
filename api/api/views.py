@@ -18,11 +18,11 @@
 from importlib import import_module
 
 from django.views import View
-from django.http import HttpResponse
-from django.conf import settings
 
 from rest_framework import generics
 from rest_framework import mixins
+from rest_framework import response
+from rest_framework import status
 
 from api.models import Song, Playlist, ScheduleEntry
 from api.serializers import PlaylistSerializer, ScheduleEntrySerializer, SongSerializer
@@ -48,9 +48,13 @@ class PlaylistListCreateView(mixins.ListModelMixin, generics.GenericAPIView):
             playlist_file = request.FILES["playlist"]
             print("file found: ", playlist_file)
             media_backend.save_playlist(playlist_file)
-            return HttpResponse(status=201)
+            return response.Response(
+                {"success": "true"}, status=status.HTTP_201_CREATED
+            )
         else:
-            return HttpResponse(status=400)
+            return response.Response(
+                {"success": "false"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class PlaylistReadUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -82,11 +86,15 @@ class MediaCreateView(View):
         if "data" in request.FILES:
             save_ok = media_backend.save_media(request.FILES["data"])
             if save_ok:
-                return HttpResponse(status=201)
-            return HttpResponse("Error: Could not save file", status=500)
+                return response.Response(
+                    {"success": "true"}, status=status.HTTP_201_CREATED
+                )
+            return response.Response(
+                {"success": "false"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         else:
-            return HttpResponse(
-                "Error: Media upload needs filename & file data", status=500
+            return response.Response(
+                {"success": "false"}, status=status.HTTP_400_BAD_REQUEST
             )
 
 
