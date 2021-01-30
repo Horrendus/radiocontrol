@@ -69,7 +69,7 @@ The example docker-compose.yml file in this project starts Redis & Celery and us
 
 # Similar projects
 
-* Airtime: https://github.com/sourcefabric/airtime
+* LibreTime: https://github.com/LibreTime/libretime
 * AuRa: https://gitlab.servus.at/autoradio
 * AzuraCast: https://github.com/AzuraCast/AzuraCast
 
